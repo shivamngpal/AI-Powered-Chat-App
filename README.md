@@ -120,7 +120,7 @@ chat-app/
 
 ## ‍💻 Author
 
-**Shivam Gopal**
+**Shivam Nagpal**
 
 - GitHub: [@shivamngpal](https://github.com/shivamngpal)
 
