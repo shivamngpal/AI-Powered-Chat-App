@@ -40,6 +40,19 @@ const initSocket = (server) => {
       // Broadcast updated online users
       io.emit("getOnlineUsers", Object.keys(userSocketMap));
     });
+
+    // Handle typing events
+    socket.on("typing", ({ receiverId, isTyping }) => {
+      const receiverSocketId = userSocketMap[receiverId];
+
+      if (receiverSocketId) {
+        io.to(receiverSocketId).emit("userTyping", {
+          userId: userId,
+          isTyping: isTyping,
+        });
+      }
+    });
+    
   });
   return io;
 };

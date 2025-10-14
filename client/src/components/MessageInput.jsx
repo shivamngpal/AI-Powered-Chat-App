@@ -1,13 +1,46 @@
-import { useState } from "react";
+import { useState, useRef } from "react";
+import { useSocketContext } from "../context/SocketContext";
 
-function MessageInput({ onSendMessage, disabled }) {
+function MessageInput({ onSendMessage, disabled, receiverId }) {
   const [message, setMessage] = useState("");
   const [sending, setSending] = useState(false);
+  const { socket } = useSocketContext();
+  const typingTimeoutRef = useRef(null);
+
+  const handleTyping = (e) => {
+    const value = e.target.value;
+    setMessage(value);
+
+    if (!socket || !receiverId) return;
+
+    // Emit typing event
+    socket.emit("typing", { receiverId, isTyping: true });
+
+    // Clear previous timeout
+    if (typingTimeoutRef.current) {
+      clearTimeout(typingTimeoutRef.current);
+    }
+
+    // Set new timeout to stop typing after 3 seconds of inactivity
+    typingTimeoutRef.current = setTimeout(() => {
+      socket.emit("typing", { receiverId, isTyping: false });
+    }, 3000);
+  };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
 
     if (!message.trim() || sending) return;
+
+    // Stop typing indicator immediately
+    if (socket && receiverId) {
+      socket.emit("typing", { receiverId, isTyping: false });
+    }
+
+    // Clear timeout
+    if (typingTimeoutRef.current) {
+      clearTimeout(typingTimeoutRef.current);
+    }
 
     setSending(true);
     try {
@@ -35,7 +68,7 @@ function MessageInput({ onSendMessage, disabled }) {
         type="text"
         placeholder="Type a message..."
         value={message}
-        onChange={(e) => setMessage(e.target.value)}
+        onChange={handleTyping}
         disabled={disabled || sending}
         style={{
           flex: 1,

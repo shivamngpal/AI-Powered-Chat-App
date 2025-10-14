@@ -2,10 +2,12 @@ import { useState, useEffect } from "react";
 import { useSocketContext } from "../context/SocketContext";
 import Messages from "./Messages";
 import MessageInput from "./MessageInput";
+import TypingIndicator from "./TypingIndicator";
 
 function MessageContainer({ selectedUser }) {
   const [messages, setMessages] = useState([]);
   const [loading, setLoading] = useState(false);
+  const [isTyping, setIsTyping] = useState(false);
   const { socket } = useSocketContext();
 
   // Fetch messages when selectedUser changes
@@ -57,6 +59,28 @@ function MessageContainer({ selectedUser }) {
     return () => {
       console.log("Removing newMessage listener");
       socket.off("newMessage", handleNewMessage);
+    };
+  }, [socket, selectedUser]);
+
+  // Listen for typing events
+  useEffect(() => {
+    if (!socket || !selectedUser) return;
+
+    const handleTyping = ({ userId, isTyping }) => {
+      console.log("⌨️ Typing event received:", { userId, isTyping });
+      // Only show typing if it's from the selected user
+      if (userId === selectedUser.id) {
+        console.log("✅ Showing typing indicator");
+        setIsTyping(isTyping);
+      }
+    };
+
+    socket.on("userTyping", handleTyping);
+    console.log("👂 Listening for userTyping events");
+
+    return () => {
+      console.log("🧹 Removing userTyping listener");
+      socket.off("userTyping", handleTyping);
     };
   }, [socket, selectedUser]);
 
@@ -131,8 +155,14 @@ function MessageContainer({ selectedUser }) {
       {/* Messages area (scrollable) */}
       <Messages messages={messages} loading={loading} />
 
+      {/* Typing indicator */}
+      {isTyping && <TypingIndicator userName={selectedUser.fullName} />}
+
       {/* Input field for sending messages */}
-      <MessageInput onSendMessage={handleSendMessage} />
+      <MessageInput 
+        onSendMessage={handleSendMessage} 
+        receiverId={selectedUser.id}
+      />
     </div>
   );
 }

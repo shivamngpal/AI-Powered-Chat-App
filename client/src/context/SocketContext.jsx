@@ -1,4 +1,5 @@
-import { createContext, useState, useEffect, useContext } from "react";
+// changed useState to useRef
+import { createContext, useState, useEffect, useContext, useRef } from "react";
 import { useAuthContext } from "./AuthContext";
 import io from "socket.io-client";
 
@@ -12,12 +13,19 @@ export const useSocketContext = () => {
 
 // Provider component
 export const SocketContextProvider = ({ children }) => {
-  const [socket, setSocket] = useState(null);
+  const socketRef = useRef(null);
   const [onlineUsers, setOnlineUsers] = useState([]);
   const { authUser } = useAuthContext();
 
   useEffect(() => {
     if (authUser) {
+      // Close any existing socket first
+      if (socketRef.current) {
+        console.log("Closing existing socket before creating new one");
+        socketRef.current.off();
+        socketRef.current.close();
+      }
+
       // User logged in - create socket connection
       const socketConnection = io("http://localhost:3001", {
         query: {
@@ -28,22 +36,22 @@ export const SocketContextProvider = ({ children }) => {
         reconnectionAttempts: 5,
       });
 
-      setSocket(socketConnection);
+      socketRef.current = socketConnection;
 
       // Connection event
       socketConnection.on("connect", () => {
-        console.log("✅ Socket connected:", socketConnection.id);
+        console.log("Socket connected:", socketConnection.id);
       });
 
       // Listen for online users updates
       socketConnection.on("getOnlineUsers", (users) => {
-        console.log("📡 Online users updated:", users);
+        console.log("Online users updated:", users);
         setOnlineUsers(users);
       });
 
       // Disconnection event
       socketConnection.on("disconnect", () => {
-        console.log("❌ Socket disconnected");
+        console.log("Socket disconnected");
       });
 
       // Error handling
@@ -53,20 +61,19 @@ export const SocketContextProvider = ({ children }) => {
 
       // Cleanup when component unmounts or authUser changes
       return () => {
-        console.log("🧹 Cleaning up socket connection");
-        socketConnection.close();
+        console.log("Cleaning up socket connection");
+        if (socketRef.current) {
+          socketRef.current.off(); // Remove all listeners
+          socketRef.current.close(); // Close connection
+          socketRef.current = null;
+        }
+        setOnlineUsers([]);
       };
-    } else {
-      // User logged out - close socket if exists
-      if (socket) {
-        socket.close();
-        setSocket(null);
-      }
     }
   }, [authUser]);
 
   return (
-    <SocketContext.Provider value={{ socket, onlineUsers }}>
+    <SocketContext.Provider value={{ socket: socketRef.current, onlineUsers }}>
       {children}
     </SocketContext.Provider>
   );
