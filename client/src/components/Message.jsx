@@ -15,6 +15,40 @@ function Message({ message }) {
     });
   };
 
+  // Get status icon based on message status
+  const getStatusIcon = () => {
+    if (!isMyMessage) return null; // Only show status on sender's messages
+
+    switch (message.status) {
+      case "sent":
+        return (
+          <span
+            style={{ marginLeft: "4px", color: "rgba(255, 255, 255, 0.7)" }}
+          >
+            ✓
+          </span>
+        );
+      case "delivered":
+        return (
+          <span
+            style={{ marginLeft: "4px", color: "rgba(255, 255, 255, 0.7)" }}
+          >
+            ✓✓
+          </span>
+        );
+      case "read":
+        return (
+          <span
+            style={{ marginLeft: "4px", color: "#06f569ff", fontWeight: "bold" }}
+          >
+            ✓✓
+          </span>
+        );
+      default:
+        return null;
+    }
+  };
+
   return (
     <div
       style={{
@@ -44,9 +78,13 @@ function Message({ message }) {
             fontSize: "10px",
             opacity: 0.7,
             textAlign: "right",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "flex-end",
           }}
         >
           {formatTime(message.createdAt)}
+          {getStatusIcon()}
         </div>
       </div>
     </div>

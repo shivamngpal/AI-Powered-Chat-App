@@ -25,6 +25,7 @@ async function sendMessage(req, res) {
       senderId,
       receiverId,
       message,
+      status: "sent", // default status
     });
 
     // Add the message's ID to the conversation's messages array
@@ -40,9 +41,18 @@ async function sendMessage(req, res) {
     const receiverSocketId = getReceiverSocketId(receiverId);
     const senderSocketId = getReceiverSocketId(senderId.toString());
 
-    // Emit to receiver
+    // Emit to receiver and update status to delivered if receiver is online
     if (receiverSocketId) {
+      newMessage.status = "delivered";
+      await newMessage.save();
       io.to(receiverSocketId).emit("newMessage", newMessage);
+      // Notify sender about status change
+      if (senderSocketId) {
+        io.to(senderSocketId).emit("messageStatusUpdate", {
+          messageId: newMessage._id,
+          status: "delivered",
+        });
+      }
     }
 
     // Also emit to sender so their UI updates without refresh
@@ -81,5 +91,44 @@ async function getMessages(req, res) {
     res.status(500).json({ error: "Internal server error" });
   }
 }
+
+async function markMessagesAsRead(req, res) {
+  try {
+    const senderId = req.params.id; // The person who sent the messages
+    const receiverId = req.user._id; // The logged-in user (receiver)
+
+    // Find all unread messages sent by senderId to receiverId
+    const updatedMessages = await MessageModel.updateMany(
+      {
+        senderId: senderId,
+        receiverId: receiverId,
+        status: { $ne: "read" }, // Only update if not already read
+      },
+      {
+        status: "read",
+      }
+    );
+
+    // Emit real-time update to sender about read receipts
+    const io = getIO();
+    const senderSocketId = getReceiverSocketId(senderId);
+
+    if (senderSocketId && updatedMessages.modifiedCount > 0) {
+      // Notify sender that their messages were read
+      io.to(senderSocketId).emit("messagesRead", {
+        receiverId: receiverId.toString(),
+      });
+    }
+
+    res.status(200).json({
+      success: true,
+      modifiedCount: updatedMessages.modifiedCount,
+    });
+  } catch (error) {
+    console.log("Error in markMessagesAsRead controller: ", error.message);
+    res.status(500).json({ error: "Internal server error" });
+  }
+}
+
 // this is named export
-module.exports = { sendMessage, getMessages };
+module.exports = { sendMessage, getMessages, markMessagesAsRead };

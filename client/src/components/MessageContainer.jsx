@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import { useSocketContext } from "../context/SocketContext";
+import { useAuthContext } from "../context/AuthContext";
 import Messages from "./Messages";
 import MessageInput from "./MessageInput";
 import TypingIndicator from "./TypingIndicator";
@@ -9,6 +10,7 @@ function MessageContainer({ selectedUser }) {
   const [loading, setLoading] = useState(false);
   const [isTyping, setIsTyping] = useState(false);
   const { socket } = useSocketContext();
+  const { authUser } = useAuthContext();
 
   // Fetch messages when selectedUser changes
   useEffect(() => {
@@ -20,6 +22,9 @@ function MessageContainer({ selectedUser }) {
         const res = await fetch(`/api/messages/${selectedUser.id}`);
         const data = await res.json();
         setMessages(data);
+
+        // Mark messages as read after fetching
+        await markAsRead();
       } catch (error) {
         console.error("Error fetching messages:", error);
       } finally {
@@ -29,6 +34,19 @@ function MessageContainer({ selectedUser }) {
 
     fetchMessages();
   }, [selectedUser]);
+
+  // Function to mark messages as read
+  const markAsRead = async () => {
+    if (!selectedUser) return;
+
+    try {
+      await fetch(`/api/messages/read/${selectedUser.id}`, {
+        method: "PUT",
+      });
+    } catch (error) {
+      console.error("Error marking messages as read:", error);
+    }
+  };
 
   // Listen for real-time messages via Socket.IO
   useEffect(() => {
@@ -47,6 +65,12 @@ function MessageContainer({ selectedUser }) {
       ) {
         console.log("Adding message to conversation");
         setMessages((prev) => [...prev, newMessage]);
+
+        // If the message is from the selected user (not from me), mark it as read
+        if (newMessage.senderId === selectedUser?.id) {
+          console.log("Marking received message as read");
+          markAsRead();
+        }
       } else {
         console.log("Message not for this conversation");
       }
@@ -83,6 +107,55 @@ function MessageContainer({ selectedUser }) {
       socket.off("userTyping", handleTyping);
     };
   }, [socket, selectedUser]);
+
+  // Listen for message status updates (delivered, read)
+  useEffect(() => {
+    if (!socket) return;
+
+    const handleMessageStatusUpdate = ({ messageId, status }) => {
+      console.log("📬 Message status update:", { messageId, status });
+      setMessages((prevMessages) =>
+        prevMessages.map((msg) =>
+          msg._id === messageId ? { ...msg, status } : msg
+        )
+      );
+    };
+
+    const handleMessagesRead = ({ receiverId }) => {
+      console.log("✓✓ Messages marked as read by:", receiverId);
+      console.log("Current user ID:", authUser?.id);
+      console.log("Selected user ID:", selectedUser?.id);
+
+      // Update all messages sent BY ME (authUser) TO the person who read them (receiverId)
+      setMessages((prevMessages) =>
+        prevMessages.map((msg) => {
+          const shouldMarkAsRead =
+            msg.senderId === authUser?.id && // I sent this message
+            msg.receiverId === receiverId && // To the person who just read it
+            msg.status !== "read"; // And it's not already marked as read
+
+          console.log(`Message ${msg._id}:`, {
+            senderId: msg.senderId,
+            receiverId: msg.receiverId,
+            status: msg.status,
+            shouldMarkAsRead,
+          });
+
+          return shouldMarkAsRead ? { ...msg, status: "read" } : msg;
+        })
+      );
+    };
+
+    socket.on("messageStatusUpdate", handleMessageStatusUpdate);
+    socket.on("messagesRead", handleMessagesRead);
+    console.log("👂 Listening for status update events");
+
+    return () => {
+      console.log("🧹 Removing status update listeners");
+      socket.off("messageStatusUpdate", handleMessageStatusUpdate);
+      socket.off("messagesRead", handleMessagesRead);
+    };
+  }, [socket, authUser, selectedUser]);
 
   // Handle sending new messages
   const handleSendMessage = async (messageText) => {
@@ -159,8 +232,8 @@ function MessageContainer({ selectedUser }) {
       {isTyping && <TypingIndicator userName={selectedUser.fullName} />}
 
       {/* Input field for sending messages */}
-      <MessageInput 
-        onSendMessage={handleSendMessage} 
+      <MessageInput
+        onSendMessage={handleSendMessage}
         receiverId={selectedUser.id}
       />
     </div>

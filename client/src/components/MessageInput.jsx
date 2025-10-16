@@ -4,7 +4,7 @@ import { useSocketContext } from "../context/SocketContext";
 function MessageInput({ onSendMessage, disabled, receiverId }) {
   const [message, setMessage] = useState("");
   const [sending, setSending] = useState(false);
-  const { socket } = useSocketContext();
+  const { socket, isConnected } = useSocketContext();
   const typingTimeoutRef = useRef(null);
 
   const handleTyping = (e) => {
@@ -66,10 +66,10 @@ function MessageInput({ onSendMessage, disabled, receiverId }) {
     >
       <input
         type="text"
-        placeholder="Type a message..."
+        placeholder={isConnected ? "Type a message..." : "Connecting..."}
         value={message}
         onChange={handleTyping}
-        disabled={disabled || sending}
+        disabled={disabled || sending || !isConnected}
         style={{
           flex: 1,
           padding: "10px 15px",
@@ -77,6 +77,7 @@ function MessageInput({ onSendMessage, disabled, receiverId }) {
           borderRadius: "20px",
           outline: "none",
           fontSize: "14px",
+          opacity: isConnected ? 1 : 0.6,
         }}
         onFocus={(e) => {
           e.target.style.borderColor = "#007bff";
@@ -87,21 +88,25 @@ function MessageInput({ onSendMessage, disabled, receiverId }) {
       />
       <button
         type="submit"
-        disabled={!message.trim() || disabled || sending}
+        disabled={!message.trim() || disabled || sending || !isConnected}
         style={{
           padding: "10px 25px",
           backgroundColor:
-            !message.trim() || disabled || sending ? "#ccc" : "#007bff",
+            !message.trim() || disabled || sending || !isConnected
+              ? "#ccc"
+              : "#007bff",
           color: "white",
           border: "none",
           borderRadius: "20px",
           cursor:
-            !message.trim() || disabled || sending ? "not-allowed" : "pointer",
+            !message.trim() || disabled || sending || !isConnected
+              ? "not-allowed"
+              : "pointer",
           fontWeight: "bold",
           fontSize: "14px",
         }}
       >
-        {sending ? "Sending..." : "Send"}
+        {!isConnected ? "Offline" : sending ? "Sending..." : "Send"}
       </button>
     </form>
   );

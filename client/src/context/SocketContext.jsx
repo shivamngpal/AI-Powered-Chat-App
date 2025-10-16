@@ -15,6 +15,9 @@ export const useSocketContext = () => {
 export const SocketContextProvider = ({ children }) => {
   const socketRef = useRef(null);
   const [onlineUsers, setOnlineUsers] = useState([]);
+  const [isConnected, setIsConnected] = useState(false);
+  const [isReconnecting, setIsReconnecting] = useState(false);
+  const [connectionError, setConnectionError] = useState(null);
   const { authUser } = useAuthContext();
 
   useEffect(() => {
@@ -40,23 +43,55 @@ export const SocketContextProvider = ({ children }) => {
 
       // Connection event
       socketConnection.on("connect", () => {
-        console.log("Socket connected:", socketConnection.id);
+        console.log("✅ Socket connected:", socketConnection.id);
+        setIsConnected(true);
+        setIsReconnecting(false);
+        setConnectionError(null);
       });
 
       // Listen for online users updates
       socketConnection.on("getOnlineUsers", (users) => {
-        console.log("Online users updated:", users);
+        console.log("👥 Online users updated:", users);
         setOnlineUsers(users);
       });
 
       // Disconnection event
-      socketConnection.on("disconnect", () => {
-        console.log("Socket disconnected");
+      socketConnection.on("disconnect", (reason) => {
+        console.log("❌ Socket disconnected:", reason);
+        setIsConnected(false);
+
+        // Show reconnecting state for user-initiated disconnect
+        if (reason === "io server disconnect") {
+          setConnectionError("Server disconnected");
+        }
+      });
+
+      // Reconnection attempt
+      socketConnection.on("reconnect_attempt", (attemptNumber) => {
+        console.log(`🔄 Reconnection attempt ${attemptNumber}...`);
+        setIsReconnecting(true);
+      });
+
+      // Reconnection success
+      socketConnection.on("reconnect", (attemptNumber) => {
+        console.log(`✅ Reconnected after ${attemptNumber} attempts`);
+        setIsConnected(true);
+        setIsReconnecting(false);
+        setConnectionError(null);
+      });
+
+      // Reconnection failed
+      socketConnection.on("reconnect_failed", () => {
+        console.error("❌ Reconnection failed");
+        setIsReconnecting(false);
+        setConnectionError("Failed to reconnect. Please refresh the page.");
       });
 
       // Error handling
       socketConnection.on("connect_error", (error) => {
-        console.error("Socket connection error:", error);
+        console.error("⚠️ Socket connection error:", error);
+        setIsConnected(false);
+        setConnectionError(error.message);
       });
 
       // Cleanup when component unmounts or authUser changes
@@ -73,7 +108,15 @@ export const SocketContextProvider = ({ children }) => {
   }, [authUser]);
 
   return (
-    <SocketContext.Provider value={{ socket: socketRef.current, onlineUsers }}>
+    <SocketContext.Provider
+      value={{
+        socket: socketRef.current,
+        onlineUsers,
+        isConnected,
+        isReconnecting,
+        connectionError,
+      }}
+    >
       {children}
     </SocketContext.Provider>
   );

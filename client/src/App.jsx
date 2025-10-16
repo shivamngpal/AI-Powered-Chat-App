@@ -3,12 +3,16 @@ import { useAuthContext } from "./context/AuthContext"; // Make sure this path i
 import Login from "./pages/Login";
 import Signup from "./pages/SignUp";
 import ChatPage from "./pages/ChatPage";
+import ConnectionStatus from "./components/ConnectionStatus";
 
 function App() {
   const { authUser } = useAuthContext();
 
   return (
     <div>
+      {/* Show connection status when logged in */}
+      {authUser && <ConnectionStatus />}
+
       <Routes>
         <Route
           path="/"
