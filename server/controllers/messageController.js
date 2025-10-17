@@ -31,6 +31,15 @@ async function sendMessage(req, res) {
     // Add the message's ID to the conversation's messages array
     if (newMessage) {
       conversation.messages.push(newMessage._id);
+
+      // Update last message reference
+      conversation.lastMessage = newMessage._id;
+
+      // Increment unread count for receiver
+      const receiverIdStr = receiverId.toString();
+      const currentUnreadCount =
+        conversation.unreadCount.get(receiverIdStr) || 0;
+      conversation.unreadCount.set(receiverIdStr, currentUnreadCount + 1);
     }
 
     // This will run both save operations in parallel for better performance
@@ -46,6 +55,16 @@ async function sendMessage(req, res) {
       newMessage.status = "delivered";
       await newMessage.save();
       io.to(receiverSocketId).emit("newMessage", newMessage);
+
+      // Send unread count update to receiver
+      const receiverIdStr = receiverId.toString();
+      const unreadCount = conversation.unreadCount.get(receiverIdStr) || 0;
+      io.to(receiverSocketId).emit("unreadCountUpdate", {
+        conversationId: conversation._id,
+        senderId: senderId.toString(),
+        unreadCount: unreadCount,
+      });
+
       // Notify sender about status change
       if (senderSocketId) {
         io.to(senderSocketId).emit("messageStatusUpdate", {
@@ -108,6 +127,17 @@ async function markMessagesAsRead(req, res) {
         status: "read",
       }
     );
+
+    // Reset unread count for this receiver in the conversation
+    const conversation = await ConversationModel.findOne({
+      participants: { $all: [senderId, receiverId] },
+    });
+
+    if (conversation) {
+      const receiverIdStr = receiverId.toString();
+      conversation.unreadCount.set(receiverIdStr, 0);
+      await conversation.save();
+    }
 
     // Emit real-time update to sender about read receipts
     const io = getIO();

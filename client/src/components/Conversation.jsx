@@ -1,4 +1,46 @@
+import { useAuthContext } from "../context/AuthContext";
+
 function Conversation({ user, isOnline, isSelected, onClick }) {
+  const { authUser } = useAuthContext();
+
+  // Format timestamp for last message
+  const formatLastMessageTime = (timestamp) => {
+    if (!timestamp) return "";
+
+    const now = new Date();
+    const messageDate = new Date(timestamp);
+    const diffInMs = now - messageDate;
+    const diffInMinutes = Math.floor(diffInMs / (1000 * 60));
+    const diffInHours = Math.floor(diffInMs / (1000 * 60 * 60));
+    const diffInDays = Math.floor(diffInMs / (1000 * 60 * 60 * 24));
+
+    if (diffInMinutes < 1) return "Just now";
+    if (diffInMinutes < 60) return `${diffInMinutes}m ago`;
+    if (diffInHours < 24) return `${diffInHours}h ago`;
+    if (diffInDays === 1) return "Yesterday";
+    if (diffInDays < 7) return `${diffInDays}d ago`;
+
+    return messageDate.toLocaleDateString();
+  };
+
+  // Truncate long messages
+  const truncateMessage = (text, maxLength = 35) => {
+    if (!text) return "";
+    if (text.length <= maxLength) return text;
+    return text.substring(0, maxLength) + "...";
+  };
+
+  // Get last message preview text
+  const getLastMessagePreview = () => {
+    if (!user.lastMessage) return "";
+
+    const isMyMessage = user.lastMessage.senderId === authUser?.id;
+    const prefix = isMyMessage ? "You: " : "";
+    const messageText = truncateMessage(user.lastMessage.message);
+
+    return prefix + messageText;
+  };
+
   return (
     <div
       onClick={onClick}
@@ -52,18 +94,86 @@ function Conversation({ user, isOnline, isSelected, onClick }) {
         )}
       </div>
 
-      {/* User name */}
-      <div style={{ flex: 1 }}>
-        <p
+      {/* User name and last message */}
+      <div style={{ flex: 1, minWidth: 0 }}>
+        <div
           style={{
-            margin: 0,
-            fontSize: "15px",
-            fontWeight: isSelected ? "600" : "500",
-            color: isSelected ? "#007bff" : "#333",
+            display: "flex",
+            justifyContent: "space-between",
+            alignItems: "center",
+            marginBottom: "2px",
           }}
         >
-          {user.fullName}
-        </p>
+          <p
+            style={{
+              margin: 0,
+              fontSize: "15px",
+              fontWeight: isSelected ? "600" : "500",
+              color: isSelected ? "#007bff" : "#333",
+            }}
+          >
+            {user.fullName}
+          </p>
+          {/* Last message timestamp */}
+          {user.lastMessage && (
+            <span
+              style={{
+                fontSize: "11px",
+                color: "#999",
+                whiteSpace: "nowrap",
+                marginLeft: "8px",
+              }}
+            >
+              {formatLastMessageTime(user.lastMessage.createdAt)}
+            </span>
+          )}
+        </div>
+
+        {/* Last message preview */}
+        <div
+          style={{
+            display: "flex",
+            justifyContent: "space-between",
+            alignItems: "center",
+          }}
+        >
+          <p
+            style={{
+              margin: 0,
+              fontSize: "13px",
+              color: "#666",
+              overflow: "hidden",
+              textOverflow: "ellipsis",
+              whiteSpace: "nowrap",
+              fontWeight: user.unreadCount > 0 ? "600" : "normal",
+            }}
+          >
+            {getLastMessagePreview() || "No messages yet"}
+          </p>
+
+          {/* Unread count badge */}
+          {user.unreadCount > 0 && (
+            <div
+              style={{
+                backgroundColor: "#25D366",
+                color: "white",
+                borderRadius: "10px",
+                minWidth: "18px",
+                height: "18px",
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                fontSize: "10px",
+                fontWeight: "bold",
+                padding: "0 4px",
+                marginLeft: "6px",
+                flexShrink: 0,
+              }}
+            >
+              {user.unreadCount > 99 ? "99+" : user.unreadCount}
+            </div>
+          )}
+        </div>
       </div>
     </div>
   );
