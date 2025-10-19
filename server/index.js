@@ -1,6 +1,7 @@
 const express = require("express");
 const app = express();
 const http = require("http");
+const path = require("path");
 // const { Server } = require('socket.io');
 const { initSocket } = require("./socket/socket.js");
 const mongoose = require("mongoose");
@@ -39,6 +40,10 @@ const io = initSocket(server);
 // middlewares
 app.use(express.json());
 app.use(cookieParser());
+
+// Serve uploaded files statically
+app.use("/uploads", express.static(path.join(__dirname, "uploads")));
+
 app.use("/api/auth", authRoutes);
 app.use("/api/messages", messageRoutes);
 app.use("/api/users", userRoutes);

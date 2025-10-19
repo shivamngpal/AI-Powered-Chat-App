@@ -1,7 +1,14 @@
 import { useAuthContext } from "../context/AuthContext";
 
+// AI Bot ID - must match backend
+// Must be a valid 24-character hexadecimal string for MongoDB ObjectId
+const AI_BOT_ID = "671a00000000000000000001";
+
 function Conversation({ user, isOnline, isSelected, onClick }) {
   const { authUser } = useAuthContext();
+
+  // Check if this is the AI bot
+  const isAIBot = user.id === AI_BOT_ID;
 
   // Format timestamp for last message
   const formatLastMessageTime = (timestamp) => {
@@ -110,9 +117,28 @@ function Conversation({ user, isOnline, isSelected, onClick }) {
               fontSize: "15px",
               fontWeight: isSelected ? "600" : "500",
               color: isSelected ? "#007bff" : "#333",
+              display: "flex",
+              alignItems: "center",
+              gap: "6px",
             }}
           >
             {user.fullName}
+            {isAIBot && (
+              <span
+                style={{
+                  fontSize: "14px",
+                  background:
+                    "linear-gradient(135deg, #667eea 0%, #764ba2 100%)",
+                  padding: "2px 6px",
+                  borderRadius: "4px",
+                  color: "white",
+                  fontWeight: "bold",
+                }}
+                title="AI Assistant"
+              >
+                🤖 AI
+              </span>
+            )}
           </p>
           {/* Last message timestamp */}
           {user.lastMessage && (

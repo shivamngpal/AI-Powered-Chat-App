@@ -99,14 +99,60 @@ function MessageContainer({ selectedUser }) {
       }
     };
 
+    const handleAITyping = ({ userId, isTyping }) => {
+      console.log("🤖 AI Typing event received:", { userId, isTyping });
+      // Show AI typing indicator
+      if (userId === selectedUser.id) {
+        console.log("✅ Showing AI typing indicator");
+        setIsTyping(isTyping);
+      }
+    };
+
     socket.on("userTyping", handleTyping);
-    console.log("👂 Listening for userTyping events");
+    socket.on("aiTyping", handleAITyping);
+    console.log("👂 Listening for typing events");
 
     return () => {
-      console.log("🧹 Removing userTyping listener");
+      console.log("🧹 Removing typing listeners");
       socket.off("userTyping", handleTyping);
+      socket.off("aiTyping", handleAITyping);
     };
   }, [socket, selectedUser]);
+
+  // Listen for read receipts and status updates
+  useEffect(() => {
+    if (!socket || !selectedUser) return;
+
+    const handleMessagesRead = ({ receiverId }) => {
+      console.log("📖 Messages read by:", receiverId);
+      // Update all my sent messages to 'read' status
+      setMessages((prev) =>
+        prev.map((msg) =>
+          msg.receiverId === receiverId && msg.senderId === authUser.id
+            ? { ...msg, status: "read" }
+            : msg
+        )
+      );
+    };
+
+    const handleMessageStatusUpdate = ({ messageId, status }) => {
+      console.log("📊 Message status update:", { messageId, status });
+      // Update specific message status
+      setMessages((prev) =>
+        prev.map((msg) => (msg._id === messageId ? { ...msg, status } : msg))
+      );
+    };
+
+    socket.on("messagesRead", handleMessagesRead);
+    socket.on("messageStatusUpdate", handleMessageStatusUpdate);
+    console.log("👂 Listening for read receipt events");
+
+    return () => {
+      console.log("🧹 Removing read receipt listeners");
+      socket.off("messagesRead", handleMessagesRead);
+      socket.off("messageStatusUpdate", handleMessageStatusUpdate);
+    };
+  }, [socket, selectedUser, authUser]);
 
   // Listen for message status updates (delivered, read)
   useEffect(() => {
@@ -170,12 +216,62 @@ function MessageContainer({ selectedUser }) {
 
       const data = await res.json();
 
+      // Check if it's a slash command response
+      if (data.isSlashCommand) {
+        console.log(`⚡ Slash command response: ${data.command}`);
+
+        // Add the AI response as a temporary message in the chat
+        const aiMessage = {
+          _id: `temp-${Date.now()}`,
+          senderId: {
+            _id: "671a00000000000000000001", // AI Bot ID
+            name: "Vach AI",
+          },
+          receiverId: authUser._id,
+          message: `🤖 **Command: ${data.command}**\n\n${data.response}`,
+          createdAt: new Date().toISOString(),
+          status: "delivered",
+          isSlashCommand: true,
+        };
+
+        setMessages((prev) => [...prev, aiMessage]);
+        return;
+      }
+
       // Don't add message here - let Socket.IO handle it
       // This prevents duplicate messages
       console.log("📤 Message sent successfully:", data);
     } catch (error) {
       console.error("Error sending message:", error);
       throw error; // Re-throw so MessageInput can handle it
+    }
+  };
+
+  // Handle sending file messages
+  const handleSendFile = async (file, caption = "") => {
+    if (!selectedUser) return;
+
+    try {
+      const formData = new FormData();
+      formData.append("file", file);
+      if (caption) {
+        formData.append("caption", caption);
+      }
+
+      const res = await fetch(`/api/messages/send-file/${selectedUser.id}`, {
+        method: "POST",
+        body: formData,
+      });
+
+      if (!res.ok) {
+        throw new Error("Failed to send file");
+      }
+
+      const data = await res.json();
+      console.log("📎 File sent successfully:", data);
+    } catch (error) {
+      console.error("Error sending file:", error);
+      throw error;
     }
   };
 
@@ -234,6 +330,7 @@ function MessageContainer({ selectedUser }) {
       {/* Input field for sending messages */}
       <MessageInput
         onSendMessage={handleSendMessage}
+        onSendFile={handleSendFile}
         receiverId={selectedUser.id}
       />
     </div>

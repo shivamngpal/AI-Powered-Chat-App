@@ -42,4 +42,32 @@ async function getUsersForSidebar(req, res) {
   }
 }
 
-module.exports = { getUsersForSidebar };
+async function searchUsers(req, res) {
+  try {
+    const loggedInUser = req.user._id;
+    const searchQuery = req.query.q; // Get search query from URL parameter
+
+    if (!searchQuery || searchQuery.trim() === "") {
+      return res.status(400).json({ error: "Search query is required" });
+    }
+
+    // Search for users by name or email (case-insensitive)
+    // Exclude the logged-in user
+    const users = await UserModel.find({
+      _id: { $ne: loggedInUser },
+      $or: [
+        { name: { $regex: searchQuery, $options: "i" } }, // case-insensitive search
+        { email: { $regex: searchQuery, $options: "i" } },
+      ],
+    })
+      .select("-password")
+      .limit(10); // Limit to 10 results
+
+    res.status(200).json(users);
+  } catch (error) {
+    console.error("Error in searchUsers: ", error.message);
+    res.status(500).json({ error: "Internal server error" });
+  }
+}
+
+module.exports = { getUsersForSidebar, searchUsers };

@@ -15,7 +15,28 @@ const messageSchema = new mongoose.Schema(
     },
     message: {
       type: String,
-      required: true,
+      required: false, // Changed to false because file messages might not have text
+    },
+    messageType: {
+      type: String,
+      enum: ["text", "image", "file"],
+      default: "text",
+    },
+    fileUrl: {
+      type: String,
+      required: false,
+    },
+    fileName: {
+      type: String,
+      required: false,
+    },
+    fileSize: {
+      type: Number,
+      required: false,
+    },
+    mimeType: {
+      type: String,
+      required: false,
     },
     status: {
       type: String,

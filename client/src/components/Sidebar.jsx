@@ -2,9 +2,12 @@ import { useState, useEffect } from "react";
 import { useSocketContext } from "../context/SocketContext";
 import { useAuthContext } from "../context/AuthContext";
 import Conversation from "./Conversation";
+import SearchBar from "./SearchBar";
 
 function Sidebar({ selectedUser, onSelectUser }) {
   const [users, setUsers] = useState([]);
+  const [searchResults, setSearchResults] = useState([]);
+  const [isSearching, setIsSearching] = useState(false);
   const [loading, setLoading] = useState(false);
   const { onlineUsers, socket } = useSocketContext();
   const { authUser } = useAuthContext();
@@ -102,6 +105,19 @@ function Sidebar({ selectedUser, onSelectUser }) {
     onSelectUser(user);
   };
 
+  const handleSearchResults = (results) => {
+    setSearchResults(results);
+    setIsSearching(true);
+  };
+
+  const handleClearSearch = () => {
+    setSearchResults([]);
+    setIsSearching(false);
+  };
+
+  // Display either search results or all users
+  const displayUsers = isSearching ? searchResults : users;
+
   return (
     <div
       style={{
@@ -122,9 +138,15 @@ function Sidebar({ selectedUser, onSelectUser }) {
         }}
       >
         <h3 style={{ margin: 0, fontSize: "18px", fontWeight: "600" }}>
-          Conversations
+          {isSearching ? "Search Results" : "Conversations"}
         </h3>
       </div>
+
+      {/* Search Bar */}
+      <SearchBar
+        onSearchResults={handleSearchResults}
+        onClearSearch={handleClearSearch}
+      />
 
       {/* Users list */}
       <div style={{ flex: 1, overflowY: "auto" }}>
@@ -132,9 +154,13 @@ function Sidebar({ selectedUser, onSelectUser }) {
           <div style={{ padding: "20px", textAlign: "center", color: "#666" }}>
             <p>Loading...</p>
           </div>
+        ) : displayUsers.length === 0 ? (
+          <div style={{ padding: "20px", textAlign: "center", color: "#666" }}>
+            <p>{isSearching ? "No users found" : "No conversations yet"}</p>
+          </div>
         ) : (
           <div>
-            {users.map((user) => (
+            {displayUsers.map((user) => (
               <Conversation
                 key={user._id}
                 user={{
@@ -161,6 +187,9 @@ function Sidebar({ selectedUser, onSelectUser }) {
                     profilePic:
                       user.profilePic || "https://via.placeholder.com/40",
                   });
+
+                  // Clear search after selecting a user
+                  handleClearSearch();
                 }}
               />
             ))}
