@@ -7,9 +7,13 @@ function MessageInput({ onSendMessage, onSendFile, disabled, receiverId }) {
   const [sending, setSending] = useState(false);
   const [selectedFile, setSelectedFile] = useState(null);
   const [filePreview, setFilePreview] = useState(null);
+  const [error, setError] = useState(null);
   const { socket, isConnected } = useSocketContext();
   const typingTimeoutRef = useRef(null);
   const fileInputRef = useRef(null);
+
+  // File size limit (5MB)
+  const MAX_FILE_SIZE = 5 * 1024 * 1024;
 
   const handleTyping = (e) => {
     const value = e.target.value;
@@ -36,6 +40,9 @@ function MessageInput({ onSendMessage, onSendFile, disabled, receiverId }) {
 
     if ((!message.trim() && !selectedFile) || sending) return;
 
+    // Clear any previous errors
+    setError(null);
+
     // Stop typing indicator immediately
     if (socket && receiverId) {
       socket.emit("typing", { receiverId, isTyping: false });
@@ -49,6 +56,10 @@ function MessageInput({ onSendMessage, onSendFile, disabled, receiverId }) {
     setSending(true);
     try {
       if (selectedFile) {
+        // Validate file size
+        if (selectedFile.size > MAX_FILE_SIZE) {
+          throw new Error("File size exceeds 5MB limit");
+        }
         // Send file message
         await onSendFile(selectedFile, message);
         setSelectedFile(null);
@@ -60,26 +71,84 @@ function MessageInput({ onSendMessage, onSendFile, disabled, receiverId }) {
       setMessage(""); // Clear input after sending
     } catch (error) {
       console.error("Error sending message:", error);
+      const errorMessage =
+        error.message || "Failed to send message. Please try again.";
+      setError(errorMessage);
+      // Auto-clear error after 5 seconds
+      setTimeout(() => setError(null), 5000);
     } finally {
       setSending(false);
     }
   };
 
+  // Handle keyboard shortcuts
+  const handleKeyDown = (e) => {
+    // Send message on Enter (without Shift)
+    if (e.key === "Enter" && !e.shiftKey) {
+      e.preventDefault();
+      handleSubmit(e);
+    }
+    // Clear file on Escape
+    if (e.key === "Escape" && selectedFile) {
+      handleRemoveFile();
+    }
+  };
+
   const handleFileSelect = (e) => {
     const file = e.target.files[0];
-    if (file) {
-      setSelectedFile(file);
+    if (!file) return;
 
-      // Create preview for images
-      if (file.type.startsWith("image/")) {
-        const reader = new FileReader();
-        reader.onloadend = () => {
-          setFilePreview(reader.result);
-        };
-        reader.readAsDataURL(file);
-      } else {
-        setFilePreview(null);
-      }
+    // Clear any previous errors
+    setError(null);
+
+    // Validate file size (5MB limit)
+    if (file.size > MAX_FILE_SIZE) {
+      setError("File size exceeds 5MB limit. Please choose a smaller file.");
+      setTimeout(() => setError(null), 5000);
+      e.target.value = ""; // Reset file input
+      return;
+    }
+
+    // Validate file type
+    const allowedTypes = [
+      "image/jpeg",
+      "image/jpg",
+      "image/png",
+      "image/gif",
+      "image/webp",
+      "image/svg+xml",
+      "application/pdf",
+      "application/msword",
+      "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+      "text/plain",
+      "application/zip",
+      "application/x-rar-compressed",
+    ];
+
+    if (!allowedTypes.includes(file.type)) {
+      setError(
+        "Invalid file type. Supported: images, PDF, DOC, DOCX, TXT, ZIP, RAR"
+      );
+      setTimeout(() => setError(null), 5000);
+      e.target.value = ""; // Reset file input
+      return;
+    }
+
+    setSelectedFile(file);
+
+    // Create preview for images
+    if (file.type.startsWith("image/")) {
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setFilePreview(reader.result);
+      };
+      reader.onerror = () => {
+        setError("Failed to load image preview");
+        setTimeout(() => setError(null), 5000);
+      };
+      reader.readAsDataURL(file);
+    } else {
+      setFilePreview(null);
     }
   };
 
@@ -97,6 +166,39 @@ function MessageInput({ onSendMessage, onSendFile, disabled, receiverId }) {
 
   return (
     <div style={{ borderTop: "1px solid #ddd", backgroundColor: "white" }}>
+      {/* Error Message */}
+      {error && (
+        <div
+          style={{
+            padding: "10px 15px",
+            backgroundColor: "#fee",
+            color: "#c33",
+            fontSize: "14px",
+            borderBottom: "1px solid #fcc",
+            display: "flex",
+            alignItems: "center",
+            gap: "8px",
+          }}
+        >
+          <span>⚠️</span>
+          <span>{error}</span>
+          <button
+            onClick={() => setError(null)}
+            style={{
+              marginLeft: "auto",
+              background: "none",
+              border: "none",
+              color: "#c33",
+              cursor: "pointer",
+              fontSize: "18px",
+              padding: "0 5px",
+            }}
+          >
+            ✕
+          </button>
+        </div>
+      )}
+
       {/* File Preview */}
       {selectedFile && (
         <div
@@ -216,7 +318,9 @@ function MessageInput({ onSendMessage, onSendFile, disabled, receiverId }) {
           }
           value={message}
           onChange={handleTyping}
+          onKeyDown={handleKeyDown}
           disabled={disabled || sending || !isConnected}
+          autoFocus
           style={{
             flex: 1,
             padding: "10px 15px",

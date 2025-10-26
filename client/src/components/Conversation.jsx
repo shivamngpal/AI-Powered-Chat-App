@@ -1,5 +1,6 @@
 import { useAuthContext } from "../context/AuthContext";
 
+
 // AI Bot ID - must match backend
 // Must be a valid 24-character hexadecimal string for MongoDB ObjectId
 const AI_BOT_ID = "671a00000000000000000001";
@@ -46,6 +47,16 @@ function Conversation({ user, isOnline, isSelected, onClick }) {
     const messageText = truncateMessage(user.lastMessage.message);
 
     return prefix + messageText;
+  };
+
+  // Get initials for avatar fallback
+  const getInitials = (name) => {
+    return name
+      .split(" ")
+      .map((n) => n[0])
+      .join("")
+      .toUpperCase()
+      .slice(0, 2);
   };
 
   return (

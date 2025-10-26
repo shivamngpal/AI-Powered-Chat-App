@@ -128,7 +128,6 @@ function Sidebar({ selectedUser, onSelectUser }) {
         flexDirection: "column",
       }}
     >
-      {/* Header */}
       <div
         style={{
           padding: "15px 20px",
@@ -141,13 +140,11 @@ function Sidebar({ selectedUser, onSelectUser }) {
           {isSearching ? "Search Results" : "Conversations"}
         </h3>
       </div>
-
       {/* Search Bar */}
       <SearchBar
         onSearchResults={handleSearchResults}
         onClearSearch={handleClearSearch}
       />
-
       {/* Users list */}
       <div style={{ flex: 1, overflowY: "auto" }}>
         {loading ? (

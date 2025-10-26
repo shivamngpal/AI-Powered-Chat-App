@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 
+
 function Signup() {
   // All state variables
   const [email, setEmail] = useState("");
@@ -114,12 +115,10 @@ function Signup() {
 
         <input
           type="password"
-          placeholder="Confirm Password"
           value={confirmPassword}
           onChange={(e) => setConfirmPassword(e.target.value)}
           disabled={loading}
         />
-
         {/* Display errors */}
         {error && (
           <div style={{ color: "red", marginBottom: "10px" }}>{error}</div>

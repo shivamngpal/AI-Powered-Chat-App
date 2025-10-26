@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 
+
 function SearchBar({ onSearchResults, onClearSearch }) {
   const [searchQuery, setSearchQuery] = useState("");
   const [searching, setSearching] = useState(false);

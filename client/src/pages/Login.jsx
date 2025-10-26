@@ -1,15 +1,26 @@
 // client/src/pages/Login.jsx
 import { useState } from "react";
 import { Link } from "react-router-dom";
-import { useAuthContext } from "../context/AuthContext"; // Make sure this path is correct
+import { useAuthContext } from "../context/AuthContext";
 
 function Login() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState("");
   const { setAuthUser } = useAuthContext();
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    setError("");
+
+    if (!email || !password) {
+      setError("Please fill in all fields");
+      return;
+    }
+
+    setLoading(true);
+
     try {
       const res = await fetch("/api/auth/signin", {
         method: "POST",
@@ -22,12 +33,13 @@ function Login() {
         throw new Error(data.msg);
       }
 
-      // On success, update the global context with user data
       console.log("Login successful, user data:", data.user);
       setAuthUser(data.user);
     } catch (error) {
       console.error("Login failed:", error.message);
-      // You can add an alert or toast message here for the user
+      setError(error.message || "Login failed. Please try again.");
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -41,6 +53,7 @@ function Login() {
           value={email}
           onChange={(e) => setEmail(e.target.value)}
         />
+
         <input
           type="password"
           placeholder="Password"
@@ -50,8 +63,10 @@ function Login() {
         <button type="submit">Login</button>
       </form>
       <p>
-        Don't have an account? Create one.{" "}
-        {/* We will make this a <Link> later */}
+        <Link to="/forgot-password">Forgot Password?</Link>
+      </p>
+      <p>
+        Don't have an account? <Link to="/signup">Sign up</Link>
       </p>
     </div>
   );

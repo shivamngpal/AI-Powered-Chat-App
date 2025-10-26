@@ -5,21 +5,32 @@ import Messages from "./Messages";
 import MessageInput from "./MessageInput";
 import TypingIndicator from "./TypingIndicator";
 
-function MessageContainer({ selectedUser }) {
+function MessageContainer({ selectedUser, onBack }) {
   const [messages, setMessages] = useState([]);
   const [loading, setLoading] = useState(false);
+  const [error, setError] = useState(null);
   const [isTyping, setIsTyping] = useState(false);
   const { socket } = useSocketContext();
   const { authUser } = useAuthContext();
 
   // Fetch messages when selectedUser changes
   useEffect(() => {
-    if (!selectedUser) return;
+    if (!selectedUser) {
+      setMessages([]); // Clear messages when no user selected
+      return;
+    }
+
+    // Clear previous messages immediately when switching users
+    setMessages([]);
 
     const fetchMessages = async () => {
       setLoading(true);
+      setError(null);
       try {
         const res = await fetch(`/api/messages/${selectedUser.id}`);
+        if (!res.ok) {
+          throw new Error("Failed to fetch messages");
+        }
         const data = await res.json();
         setMessages(data);
 
@@ -27,6 +38,7 @@ function MessageContainer({ selectedUser }) {
         await markAsRead();
       } catch (error) {
         console.error("Error fetching messages:", error);
+        setError("Failed to load messages. Please refresh the page.");
       } finally {
         setLoading(false);
       }
@@ -314,12 +326,66 @@ function MessageContainer({ selectedUser }) {
           borderBottom: "1px solid #ddd",
           backgroundColor: "#007bff",
           color: "white",
+          display: "flex",
+          alignItems: "center",
+          gap: "15px",
         }}
       >
+        {onBack && (
+          <button
+            onClick={onBack}
+            style={{
+              background: "none",
+              border: "none",
+              color: "white",
+              cursor: "pointer",
+              fontSize: "20px",
+              padding: "0",
+              display: "flex",
+              alignItems: "center",
+            }}
+            title="Back to conversations"
+          >
+            ←
+          </button>
+        )}
         <h3 style={{ margin: 0, fontSize: "18px", fontWeight: "600" }}>
           {selectedUser.fullName}
         </h3>
       </div>
+
+      {/* Error Message */}
+      {error && (
+        <div
+          style={{
+            padding: "12px 20px",
+            backgroundColor: "#fee",
+            color: "#c33",
+            fontSize: "14px",
+            borderBottom: "1px solid #fcc",
+            display: "flex",
+            alignItems: "center",
+            gap: "8px",
+          }}
+        >
+          <span>⚠️</span>
+          <span>{error}</span>
+          <button
+            onClick={() => setError(null)}
+            style={{
+              marginLeft: "auto",
+              background: "none",
+              border: "none",
+              color: "#c33",
+              cursor: "pointer",
+              fontSize: "18px",
+              padding: "0 5px",
+            }}
+          >
+            ✕
+          </button>
+        </div>
+      )}
 
       {/* Messages area (scrollable) */}
       <Messages messages={messages} loading={loading} />
