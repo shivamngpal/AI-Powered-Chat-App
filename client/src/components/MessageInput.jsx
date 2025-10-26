@@ -329,6 +329,8 @@ function MessageInput({ onSendMessage, onSendFile, disabled, receiverId }) {
             outline: "none",
             fontSize: "14px",
             opacity: isConnected ? 1 : 0.6,
+            color: "#333", // ← ADD THIS LINE
+            backgroundColor: "white", // ← ADD THIS LINE TOO
           }}
           onFocus={(e) => {
             e.target.style.borderColor = "#007bff";
