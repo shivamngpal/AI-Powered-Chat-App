@@ -99,18 +99,24 @@ app.get("/health", (req, res) => {
 // Error handling middleware (must be last)
 app.use(errorHandler);
 
-// For local development
-if (process.env.NODE_ENV !== "production") {
-  server.listen(port, () => {
-    console.log(`🚀 Server is running on port ${port}`);
-    console.log(`📝 Environment: ${process.env.NODE_ENV || "development"}`);
-  });
-}
+// // For local development
+// if (process.env.NODE_ENV !== "production") {
+//   server.listen(port, () => {
+//     console.log(`🚀 Server is running on port ${port}`);
+//     console.log(`📝 Environment: ${process.env.NODE_ENV || "development"}`);
+//   });
+// }
 
-// For Railway/Production - start server
+// // For Railway/Production - start server
+// server.listen(port, () => {
+//   console.log(`🚀 Server is running on port ${port}`);
+//   console.log(`📝 Environment: ${process.env.NODE_ENV || "development"}`);
+// });
+
+// Start the server (single listen call)
 server.listen(port, () => {
   console.log(`🚀 Server is running on port ${port}`);
-  console.log(`📝 Environment: ${process.env.NODE_ENV || "development"}`);
+  console.log(`🌍 Environment: ${process.env.NODE_ENV || "development"}`);
 });
 
 // Graceful shutdown
