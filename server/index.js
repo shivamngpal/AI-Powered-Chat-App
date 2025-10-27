@@ -52,26 +52,25 @@ app.use(
   })
 );
 
-// CORS configuration
-const allowedOrigins = process.env.CLIENT_URL
-  ? [process.env.CLIENT_URL]
-  : ["http://localhost:3000"];
-
+// CORS configuration - Allow frontend explicitly
 app.use(
   cors({
-    origin: function (origin, callback) {
-      // Allow requests with no origin (mobile apps, Postman, etc.)
-      if (!origin) return callback(null, true);
-
-      if (allowedOrigins.indexOf(origin) !== -1) {
-        callback(null, true);
-      } else {
-        callback(new Error("Not allowed by CORS"));
-      }
-    },
+    origin: [
+      "https://vachchat.vercel.app",
+      "http://localhost:3000",
+      "http://localhost:3001",
+    ],
     credentials: true,
+    methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS", "PATCH"],
+    allowedHeaders: ["Content-Type", "Authorization", "Cookie"],
+    exposedHeaders: ["Set-Cookie"],
+    preflightContinue: false,
+    optionsSuccessStatus: 204,
   })
 );
+
+// Handle preflight requests explicitly
+app.options("*", cors());
 
 // middlewares
 app.use(express.json());
@@ -98,11 +97,15 @@ app.get("/health", (req, res) => {
 // Error handling middleware (must be last)
 app.use(errorHandler);
 
-// app.listen(port, () => {
-//   console.log(`Server is running on port ${port}`);
-// });
+// For local development
+if (process.env.NODE_ENV !== "production") {
+  server.listen(port, () => {
+    console.log(`🚀 Server is running on port ${port}`);
+    console.log(`📝 Environment: ${process.env.NODE_ENV || "development"}`);
+  });
+}
 
-// Instead of app.listen, use server.listen
+// For Railway/Production - start server
 server.listen(port, () => {
   console.log(`🚀 Server is running on port ${port}`);
   console.log(`📝 Environment: ${process.env.NODE_ENV || "development"}`);
@@ -117,5 +120,3 @@ process.on("SIGTERM", () => {
     process.exit(0);
   });
 });
-
-// No need to export io - it's available through getIO() from socket/socket.js

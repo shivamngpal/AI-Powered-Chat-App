@@ -3,6 +3,9 @@ import { createContext, useState, useEffect, useContext, useRef } from "react";
 import { useAuthContext } from "./AuthContext";
 import io from "socket.io-client";
 
+// Get Socket URL from environment or use relative URL for development
+const SOCKET_URL = import.meta.env.VITE_SOCKET_URL || "";
+
 // Create context
 const SocketContext = createContext();
 
@@ -30,8 +33,8 @@ export const SocketContextProvider = ({ children }) => {
       }
 
       // User logged in - create socket connection
-      // Using relative URL - Vite proxy will forward to backend
-      const socketConnection = io({
+      // Use environment variable for production or relative URL for development
+      const socketConnection = io(SOCKET_URL, {
         query: {
           userId: authUser.id,
         },
