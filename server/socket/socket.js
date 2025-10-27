@@ -8,9 +8,13 @@ const userSocketMap = {};
 let io;
 
 const initSocket = (server) => {
+  const allowedOrigins = process.env.CLIENT_URL
+    ? [process.env.CLIENT_URL]
+    : ["http://localhost:3000", "http://localhost:3001"];
+
   io = new Server(server, {
     cors: {
-      origin: ["http://localhost:3000", "http://localhost:3001"],
+      origin: allowedOrigins,
       credentials: true,
     },
   });
@@ -52,7 +56,6 @@ const initSocket = (server) => {
         });
       }
     });
-    
   });
   return io;
 };

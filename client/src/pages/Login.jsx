@@ -2,6 +2,16 @@
 import { useState } from "react";
 import { Link } from "react-router-dom";
 import { useAuthContext } from "../context/AuthContext";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardFooter,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
 
 function Login() {
   const [email, setEmail] = useState("");
@@ -34,7 +44,14 @@ function Login() {
       }
 
       console.log("Login successful, user data:", data.user);
-      setAuthUser(data.user);
+
+      // Store user data with relative profilePic path (proxy handles routing)
+      const userData = {
+        ...data.user,
+        profilePic: data.user.profilePic || "",
+      };
+
+      setAuthUser(userData);
     } catch (error) {
       console.error("Login failed:", error.message);
       setError(error.message || "Login failed. Please try again.");
@@ -44,30 +61,110 @@ function Login() {
   };
 
   return (
-    <div>
-      <h1>Login</h1>
-      <form onSubmit={handleSubmit}>
-        <input
-          type="email"
-          placeholder="Email"
-          value={email}
-          onChange={(e) => setEmail(e.target.value)}
-        />
+    <div
+      className="min-h-screen flex items-center justify-center p-4"
+      style={{
+        background:
+          "linear-gradient(135deg, #0a0a0a 0%, #1a1a1a 50%, #0f0f0f 100%)",
+      }}
+    >
+      <Card
+        className="w-full max-w-md border-border shadow-2xl backdrop-blur-sm"
+        style={{
+          boxShadow:
+            "0 25px 50px -12px rgba(0, 0, 0, 0.5), 0 0 0 1px rgba(255, 255, 255, 0.05)",
+        }}
+      >
+        <CardHeader className="space-y-3 text-center">
+          {/* VachChat Logo */}
+          <div className="flex justify-center mb-4">
+            <img
+              src="/vachchat-logo.png"
+              alt="VachChat Logo"
+              style={{ width: "200px", height: "auto" }}
+            />
+          </div>
+          <CardTitle className="text-3xl font-bold tracking-tight">
+            Welcome Back
+          </CardTitle>
+          <CardDescription className="text-muted-foreground">
+            Sign in to continue to VachChat
+          </CardDescription>
+        </CardHeader>
 
-        <input
-          type="password"
-          placeholder="Password"
-          value={password}
-          onChange={(e) => setPassword(e.target.value)}
-        />
-        <button type="submit">Login</button>
-      </form>
-      <p>
-        <Link to="/forgot-password">Forgot Password?</Link>
-      </p>
-      <p>
-        Don't have an account? <Link to="/signup">Sign up</Link>
-      </p>
+        <CardContent className="space-y-4">
+          <form onSubmit={handleSubmit} className="space-y-4">
+            <div className="space-y-2">
+              <label
+                htmlFor="email"
+                className="text-sm font-medium text-foreground"
+              >
+                Email
+              </label>
+              <Input
+                id="email"
+                type="email"
+                placeholder="name@example.com"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                disabled={loading}
+                className="bg-secondary/50 border-border"
+              />
+            </div>
+
+            <div className="space-y-2">
+              <label
+                htmlFor="password"
+                className="text-sm font-medium text-foreground"
+              >
+                Password
+              </label>
+              <Input
+                id="password"
+                type="password"
+                placeholder="••••••••"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                disabled={loading}
+                className="bg-secondary/50 border-border"
+              />
+            </div>
+
+            {error && (
+              <div className="bg-destructive/10 border border-destructive/50 text-destructive px-4 py-3 rounded-lg text-sm flex items-center gap-2">
+                <span>⚠️</span>
+                <span>{error}</span>
+              </div>
+            )}
+
+            <Button
+              type="submit"
+              className="w-full bg-primary hover:bg-primary/90 text-primary-foreground font-semibold border border-primary/30 hover:border-primary/50 transition-all"
+              disabled={loading}
+            >
+              {loading ? "Logging in..." : "Login"}
+            </Button>
+          </form>
+        </CardContent>
+
+        <CardFooter className="flex flex-col space-y-3 text-center">
+          <Link
+            to="/forgot-password"
+            className="text-sm text-primary hover:text-primary/80 hover:underline transition-colors"
+          >
+            Forgot Password?
+          </Link>
+          <p className="text-sm text-muted-foreground">
+            Don't have an account?{" "}
+            <Link
+              to="/signup"
+              className="text-primary hover:text-primary/80 hover:underline font-medium transition-colors"
+            >
+              Sign up
+            </Link>
+          </p>
+        </CardFooter>
+      </Card>
     </div>
   );
 }

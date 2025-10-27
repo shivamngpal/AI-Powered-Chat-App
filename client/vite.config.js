@@ -18,6 +18,17 @@ export default defineConfig({
         changeOrigin: true,
         secure: false,
       },
+      "/uploads": {
+        target: "http://localhost:3001", // Proxy uploads folder
+        changeOrigin: true,
+        secure: false,
+      },
+      "/socket.io": {
+        target: "http://localhost:3001", // Proxy Socket.IO connection
+        changeOrigin: true,
+        secure: false,
+        ws: true, // Enable WebSocket proxying
+      },
     },
   },
 });

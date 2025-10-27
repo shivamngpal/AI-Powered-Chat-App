@@ -1,6 +1,14 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
 
 function ForgotPassword() {
   const [email, setEmail] = useState("");
@@ -79,267 +87,169 @@ function ForgotPassword() {
 
   return (
     <div
+      className="min-h-screen flex items-center justify-center p-4"
       style={{
-        minHeight: "100vh",
-        display: "flex",
-        alignItems: "center",
-        justifyContent: "center",
-        background: "linear-gradient(135deg, #667eea 0%, #764ba2 100%)",
-        padding: "20px",
+        background:
+          "linear-gradient(135deg, #0a0a0a 0%, #1a1a1a 50%, #0f0f0f 100%)",
       }}
     >
-      <div
+      <Card
+        className="w-full max-w-md border-border shadow-2xl backdrop-blur-sm"
         style={{
-          backgroundColor: "white",
-          borderRadius: "12px",
-          padding: "40px",
-          width: "100%",
-          maxWidth: "400px",
-          boxShadow: "0 10px 30px rgba(0,0,0,0.2)",
+          boxShadow:
+            "0 25px 50px -12px rgba(0, 0, 0, 0.5), 0 0 0 1px rgba(255, 255, 255, 0.05)",
         }}
       >
-        <h2 style={{ marginBottom: "10px", color: "#333", fontSize: "28px" }}>
-          Reset Password
-        </h2>
-        <p style={{ marginBottom: "30px", color: "#666", fontSize: "14px" }}>
-          {step === 1
-            ? "Enter your email to receive a reset code"
-            : "Enter the 6-digit code and your new password"}
-        </p>
-
-        {/* Error Message */}
-        {error && (
-          <div
-            style={{
-              padding: "12px",
-              marginBottom: "20px",
-              backgroundColor: "#fee",
-              color: "#c33",
-              borderRadius: "8px",
-              fontSize: "14px",
-            }}
-          >
-            {error}
+        <CardHeader className="space-y-3 text-center">
+          {/* VachChat Logo */}
+          <div className="flex justify-center mb-4">
+            <img
+              src="/vachchat-logo.png"
+              alt="VachChat Logo"
+              style={{ width: "200px", height: "auto" }}
+            />
           </div>
-        )}
+          <CardTitle className="text-3xl font-bold tracking-tight">
+            Reset Password
+          </CardTitle>
+          <CardDescription className="text-muted-foreground">
+            {step === 1
+              ? "Enter your email to receive a reset code"
+              : "Enter the 6-digit code and your new password"}
+          </CardDescription>
+        </CardHeader>
 
-        {/* Success Message */}
-        {success && (
-          <div
-            style={{
-              padding: "12px",
-              marginBottom: "20px",
-              backgroundColor: "#efe",
-              color: "#3c3",
-              borderRadius: "8px",
-              fontSize: "14px",
-              whiteSpace: "pre-line",
-            }}
-          >
-            {success}
-          </div>
-        )}
+        <CardContent className="space-y-4">
+          {/* Error Message */}
+          {error && (
+            <div className="bg-destructive/10 border border-destructive/50 text-destructive px-4 py-3 rounded-lg text-sm flex items-center gap-2">
+              <span>⚠️</span>
+              <span>{error}</span>
+            </div>
+          )}
 
-        {/* Step 1: Request Reset Token */}
-        {step === 1 && (
-          <form onSubmit={handleRequestReset}>
-            <div style={{ marginBottom: "20px" }}>
-              <label
-                style={{
-                  display: "block",
-                  marginBottom: "8px",
-                  color: "#333",
-                  fontSize: "14px",
-                  fontWeight: "500",
+          {/* Success Message */}
+          {success && (
+            <div className="bg-success/10 border border-success/50 text-success px-4 py-3 rounded-lg text-sm flex items-center gap-2">
+              <span>✓</span>
+              <span className="whitespace-pre-line">{success}</span>
+            </div>
+          )}
+
+          {/* Step 1: Request Reset Token */}
+          {step === 1 && (
+            <form onSubmit={handleRequestReset} className="space-y-4">
+              <div className="space-y-2">
+                <label
+                  htmlFor="email"
+                  className="text-sm font-medium text-foreground"
+                >
+                  Email
+                </label>
+                <Input
+                  id="email"
+                  type="email"
+                  placeholder="name@example.com"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  disabled={loading}
+                  required
+                  className="bg-secondary/50 border-border"
+                />
+              </div>
+
+              <Button
+                type="submit"
+                className="w-full bg-primary hover:bg-primary/90 text-primary-foreground font-semibold border border-primary/30 hover:border-primary/50 transition-all"
+                disabled={loading}
+              >
+                {loading ? "Sending..." : "Send Reset Code"}
+              </Button>
+
+              <Button
+                type="button"
+                variant="outline"
+                className="w-full border-border hover:bg-secondary/50"
+                onClick={() => navigate("/login")}
+              >
+                Back to Login
+              </Button>
+            </form>
+          )}
+
+          {/* Step 2: Reset Password with Token */}
+          {step === 2 && (
+            <form onSubmit={handleResetPassword} className="space-y-4">
+              <div className="space-y-2">
+                <label
+                  htmlFor="token"
+                  className="text-sm font-medium text-foreground"
+                >
+                  6-Digit Reset Code
+                </label>
+                <Input
+                  id="token"
+                  type="text"
+                  placeholder="000000"
+                  value={token}
+                  onChange={(e) =>
+                    setToken(e.target.value.replace(/\D/g, "").slice(0, 6))
+                  }
+                  disabled={loading}
+                  required
+                  maxLength={6}
+                  className="bg-secondary/50 border-border text-center text-lg tracking-widest font-semibold"
+                />
+              </div>
+
+              <div className="space-y-2">
+                <label
+                  htmlFor="newPassword"
+                  className="text-sm font-medium text-foreground"
+                >
+                  New Password
+                </label>
+                <Input
+                  id="newPassword"
+                  type="password"
+                  placeholder="••••••••"
+                  value={newPassword}
+                  onChange={(e) => setNewPassword(e.target.value)}
+                  disabled={loading}
+                  required
+                  className="bg-secondary/50 border-border"
+                />
+                <p className="text-xs text-muted-foreground">
+                  Must be 6-12 characters with uppercase, lowercase, and number
+                </p>
+              </div>
+
+              <Button
+                type="submit"
+                className="w-full bg-primary hover:bg-primary/90 text-primary-foreground font-semibold border border-primary/30 hover:border-primary/50 transition-all"
+                disabled={loading}
+              >
+                {loading ? "Resetting..." : "Reset Password"}
+              </Button>
+
+              <Button
+                type="button"
+                variant="outline"
+                className="w-full border-border hover:bg-secondary/50"
+                onClick={() => {
+                  setStep(1);
+                  setToken("");
+                  setNewPassword("");
+                  setError("");
+                  setSuccess("");
                 }}
               >
-                Email
-              </label>
-              <input
-                type="email"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                required
-                disabled={loading}
-                style={{
-                  width: "100%",
-                  padding: "12px",
-                  border: "1px solid #ddd",
-                  borderRadius: "8px",
-                  fontSize: "14px",
-                  outline: "none",
-                  transition: "border-color 0.3s",
-                }}
-                onFocus={(e) => (e.target.style.borderColor = "#667eea")}
-                onBlur={(e) => (e.target.style.borderColor = "#ddd")}
-                placeholder="Enter your email"
-              />
-            </div>
-
-            <button
-              type="submit"
-              disabled={loading}
-              style={{
-                width: "100%",
-                padding: "14px",
-                backgroundColor: loading ? "#ccc" : "#667eea",
-                color: "white",
-                border: "none",
-                borderRadius: "8px",
-                fontSize: "16px",
-                fontWeight: "600",
-                cursor: loading ? "not-allowed" : "pointer",
-                transition: "background-color 0.3s",
-                marginBottom: "15px",
-              }}
-            >
-              {loading ? "Sending..." : "Send Reset Code"}
-            </button>
-
-            <button
-              type="button"
-              onClick={() => navigate("/login")}
-              style={{
-                width: "100%",
-                padding: "14px",
-                backgroundColor: "transparent",
-                color: "#667eea",
-                border: "1px solid #667eea",
-                borderRadius: "8px",
-                fontSize: "16px",
-                fontWeight: "600",
-                cursor: "pointer",
-                transition: "all 0.3s",
-              }}
-            >
-              Back to Login
-            </button>
-          </form>
-        )}
-
-        {/* Step 2: Reset Password with Token */}
-        {step === 2 && (
-          <form onSubmit={handleResetPassword}>
-            <div style={{ marginBottom: "20px" }}>
-              <label
-                style={{
-                  display: "block",
-                  marginBottom: "8px",
-                  color: "#333",
-                  fontSize: "14px",
-                  fontWeight: "500",
-                }}
-              >
-                6-Digit Reset Code
-              </label>
-              <input
-                type="text"
-                value={token}
-                onChange={(e) =>
-                  setToken(e.target.value.replace(/\D/g, "").slice(0, 6))
-                }
-                required
-                disabled={loading}
-                maxLength={6}
-                style={{
-                  width: "100%",
-                  padding: "12px",
-                  border: "1px solid #ddd",
-                  borderRadius: "8px",
-                  fontSize: "18px",
-                  outline: "none",
-                  letterSpacing: "4px",
-                  textAlign: "center",
-                  fontWeight: "600",
-                }}
-                onFocus={(e) => (e.target.style.borderColor = "#667eea")}
-                onBlur={(e) => (e.target.style.borderColor = "#ddd")}
-                placeholder="000000"
-              />
-            </div>
-
-            <div style={{ marginBottom: "20px" }}>
-              <label
-                style={{
-                  display: "block",
-                  marginBottom: "8px",
-                  color: "#333",
-                  fontSize: "14px",
-                  fontWeight: "500",
-                }}
-              >
-                New Password
-              </label>
-              <input
-                type="password"
-                value={newPassword}
-                onChange={(e) => setNewPassword(e.target.value)}
-                required
-                disabled={loading}
-                style={{
-                  width: "100%",
-                  padding: "12px",
-                  border: "1px solid #ddd",
-                  borderRadius: "8px",
-                  fontSize: "14px",
-                  outline: "none",
-                }}
-                onFocus={(e) => (e.target.style.borderColor = "#667eea")}
-                onBlur={(e) => (e.target.style.borderColor = "#ddd")}
-                placeholder="Enter new password"
-              />
-              <p style={{ fontSize: "12px", color: "#666", marginTop: "5px" }}>
-                Must be 6-12 characters with uppercase, lowercase, and number
-              </p>
-            </div>
-
-            <button
-              type="submit"
-              disabled={loading}
-              style={{
-                width: "100%",
-                padding: "14px",
-                backgroundColor: loading ? "#ccc" : "#667eea",
-                color: "white",
-                border: "none",
-                borderRadius: "8px",
-                fontSize: "16px",
-                fontWeight: "600",
-                cursor: loading ? "not-allowed" : "pointer",
-                transition: "background-color 0.3s",
-                marginBottom: "15px",
-              }}
-            >
-              {loading ? "Resetting..." : "Reset Password"}
-            </button>
-
-            <button
-              type="button"
-              onClick={() => {
-                setStep(1);
-                setToken("");
-                setNewPassword("");
-                setError("");
-                setSuccess("");
-              }}
-              style={{
-                width: "100%",
-                padding: "14px",
-                backgroundColor: "transparent",
-                color: "#667eea",
-                border: "1px solid #667eea",
-                borderRadius: "8px",
-                fontSize: "16px",
-                fontWeight: "600",
-                cursor: "pointer",
-                transition: "all 0.3s",
-              }}
-            >
-              Back to Email Entry
-            </button>
-          </form>
-        )}
-      </div>
+                Back to Email Entry
+              </Button>
+            </form>
+          )}
+        </CardContent>
+      </Card>
     </div>
   );
 }

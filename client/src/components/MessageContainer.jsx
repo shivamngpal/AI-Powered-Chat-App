@@ -296,14 +296,40 @@ function MessageContainer({ selectedUser, onBack }) {
           display: "flex",
           alignItems: "center",
           justifyContent: "center",
-          backgroundColor: "#f5f5f5",
+          backgroundColor: "#1F1F1F",
         }}
       >
-        <div style={{ textAlign: "center", color: "#666" }}>
-          <h2 style={{ fontSize: "24px", marginBottom: "10px" }}>💬</h2>
-          <h3 style={{ fontSize: "18px", fontWeight: "normal" }}>
+        <div style={{ textAlign: "center", color: "#999" }}>
+          <img
+            src="/vachchat-logo.png"
+            alt="VachChat"
+            style={{
+              width: "200px",
+              height: "auto",
+              margin: "0 auto 20px",
+              opacity: 0.8,
+            }}
+          />
+          <h3
+            style={{
+              fontSize: "20px",
+              fontWeight: "500",
+              color: "#B0B0B0",
+              letterSpacing: "0.5px",
+              marginTop: "20px",
+            }}
+          >
             Select a conversation to start messaging
           </h3>
+          <p
+            style={{
+              fontSize: "14px",
+              color: "#666",
+              marginTop: "10px",
+            }}
+          >
+            Powered by VachChat - Real-time messaging
+          </p>
         </div>
       </div>
     );
@@ -316,19 +342,20 @@ function MessageContainer({ selectedUser, onBack }) {
         flex: 1,
         display: "flex",
         flexDirection: "column",
-        backgroundColor: "white",
+        backgroundColor: "#0f0f0f",
       }}
     >
       {/* Header - showing selected user's name */}
       <div
         style={{
-          padding: "15px 20px",
-          borderBottom: "1px solid #ddd",
-          backgroundColor: "#007bff",
-          color: "white",
+          padding: "20px",
+          borderBottom: "1px solid #404040",
+          backgroundColor: "#1A1A1A",
+          color: "#FAFAFA",
           display: "flex",
           alignItems: "center",
           gap: "15px",
+          boxShadow: "0 2px 8px rgba(0, 0, 0, 0.3)",
         }}
       >
         {onBack && (
@@ -337,19 +364,27 @@ function MessageContainer({ selectedUser, onBack }) {
             style={{
               background: "none",
               border: "none",
-              color: "white",
+              color: "#FAFAFA",
               cursor: "pointer",
-              fontSize: "20px",
+              fontSize: "24px",
               padding: "0",
               display: "flex",
               alignItems: "center",
+              fontWeight: "bold",
             }}
             title="Back to conversations"
           >
             ←
           </button>
         )}
-        <h3 style={{ margin: 0, fontSize: "18px", fontWeight: "600" }}>
+        <h3
+          style={{
+            margin: 0,
+            fontSize: "20px",
+            fontWeight: "700",
+            letterSpacing: "0.5px",
+          }}
+        >
           {selectedUser.fullName}
         </h3>
       </div>
@@ -359,10 +394,10 @@ function MessageContainer({ selectedUser, onBack }) {
         <div
           style={{
             padding: "12px 20px",
-            backgroundColor: "#fee",
-            color: "#c33",
+            backgroundColor: "#3d1a1a",
+            color: "#ef4444",
             fontSize: "14px",
-            borderBottom: "1px solid #fcc",
+            borderBottom: "1px solid #531a1a",
             display: "flex",
             alignItems: "center",
             gap: "8px",
@@ -376,7 +411,7 @@ function MessageContainer({ selectedUser, onBack }) {
               marginLeft: "auto",
               background: "none",
               border: "none",
-              color: "#c33",
+              color: "#ef4444",
               cursor: "pointer",
               fontSize: "18px",
               padding: "0 5px",

@@ -165,16 +165,16 @@ function MessageInput({ onSendMessage, onSendFile, disabled, receiverId }) {
   };
 
   return (
-    <div style={{ borderTop: "1px solid #ddd", backgroundColor: "white" }}>
+    <div style={{ borderTop: "1px solid #404040", backgroundColor: "#1A1A1A" }}>
       {/* Error Message */}
       {error && (
         <div
           style={{
             padding: "10px 15px",
-            backgroundColor: "#fee",
-            color: "#c33",
+            backgroundColor: "#3d1a1a",
+            color: "#ef4444",
             fontSize: "14px",
-            borderBottom: "1px solid #fcc",
+            borderBottom: "1px solid #531a1a",
             display: "flex",
             alignItems: "center",
             gap: "8px",
@@ -188,7 +188,7 @@ function MessageInput({ onSendMessage, onSendFile, disabled, receiverId }) {
               marginLeft: "auto",
               background: "none",
               border: "none",
-              color: "#c33",
+              color: "#ef4444",
               cursor: "pointer",
               fontSize: "18px",
               padding: "0 5px",
@@ -204,8 +204,8 @@ function MessageInput({ onSendMessage, onSendFile, disabled, receiverId }) {
         <div
           style={{
             padding: "10px 15px",
-            borderBottom: "1px solid #ddd",
-            backgroundColor: "#f8f9fa",
+            borderBottom: "1px solid #404040",
+            backgroundColor: "#262626",
           }}
         >
           <div
@@ -234,7 +234,7 @@ function MessageInput({ onSendMessage, onSendFile, disabled, receiverId }) {
                   display: "flex",
                   alignItems: "center",
                   justifyContent: "center",
-                  backgroundColor: "#e9ecef",
+                  backgroundColor: "#333333",
                   borderRadius: "5px",
                   fontSize: "24px",
                 }}
@@ -243,10 +243,16 @@ function MessageInput({ onSendMessage, onSendFile, disabled, receiverId }) {
               </div>
             )}
             <div style={{ flex: 1 }}>
-              <div style={{ fontWeight: "500", fontSize: "14px" }}>
+              <div
+                style={{
+                  fontWeight: "500",
+                  fontSize: "14px",
+                  color: "#FAFAFA",
+                }}
+              >
                 {selectedFile.name}
               </div>
-              <div style={{ fontSize: "12px", color: "#666" }}>
+              <div style={{ fontSize: "12px", color: "#999" }}>
                 {(selectedFile.size / 1024).toFixed(2)} KB
               </div>
             </div>
@@ -258,7 +264,7 @@ function MessageInput({ onSendMessage, onSendFile, disabled, receiverId }) {
                 border: "none",
                 cursor: "pointer",
                 fontSize: "20px",
-                color: "#dc3545",
+                color: "#ef4444",
               }}
             >
               ✕
@@ -324,19 +330,19 @@ function MessageInput({ onSendMessage, onSendFile, disabled, receiverId }) {
           style={{
             flex: 1,
             padding: "10px 15px",
-            border: "1px solid #ddd",
+            border: "1px solid #404040",
             borderRadius: "20px",
             outline: "none",
             fontSize: "14px",
             opacity: isConnected ? 1 : 0.6,
-            color: "#333", // ← ADD THIS LINE
-            backgroundColor: "white", // ← ADD THIS LINE TOO
+            color: "#FAFAFA",
+            backgroundColor: "#262626",
           }}
           onFocus={(e) => {
-            e.target.style.borderColor = "#007bff";
+            e.target.style.borderColor = "#3B82F6";
           }}
           onBlur={(e) => {
-            e.target.style.borderColor = "#ddd";
+            e.target.style.borderColor = "#404040";
           }}
         />
         <button
@@ -354,9 +360,9 @@ function MessageInput({ onSendMessage, onSendFile, disabled, receiverId }) {
               disabled ||
               sending ||
               !isConnected
-                ? "#ccc"
-                : "#007bff",
-            color: "white",
+                ? "#404040"
+                : "#3B82F6",
+            color: "#FAFAFA",
             border: "none",
             borderRadius: "20px",
             cursor:

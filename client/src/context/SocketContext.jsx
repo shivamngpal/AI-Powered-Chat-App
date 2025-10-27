@@ -30,7 +30,8 @@ export const SocketContextProvider = ({ children }) => {
       }
 
       // User logged in - create socket connection
-      const socketConnection = io("http://localhost:3001", {
+      // Using relative URL - Vite proxy will forward to backend
+      const socketConnection = io({
         query: {
           userId: authUser.id,
         },

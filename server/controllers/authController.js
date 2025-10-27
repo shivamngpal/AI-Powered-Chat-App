@@ -4,6 +4,7 @@ const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
 const UserModel = require("../models/userModel");
 const dotenv = require("dotenv");
+const { sendResetEmail } = require("../config/emailConfig");
 
 // Load environment variables
 dotenv.config();
@@ -148,6 +149,8 @@ async function signinUser(req, res) {
         id: user._id,
         email: user.email,
         name: user.name,
+        profilePic: user.profilePic || "",
+        about: user.about || "Hey there! I am using VachChat 💬",
       },
     });
   } else {
@@ -198,17 +201,13 @@ async function forgotPassword(req, res) {
     user.resetPasswordExpires = Date.now() + 15 * 60 * 1000; // 15 minutes
     await user.save();
 
-    // TODO: In production, send email with nodemailer instead of console log
-    // For development/testing only - check server console for the code
-    if (process.env.NODE_ENV !== "production") {
-      console.log(
-        `🔐 [DEV ONLY] Password reset code for ${email}: ${resetToken}`
-      );
-      console.log(`⚠️  This code will expire in 15 minutes`);
+    // Send reset email
+    try {
+      await sendResetEmail(email, resetToken);
+    } catch (emailError) {
+      console.error("Failed to send email, but token was saved:", emailError);
+      // Continue anyway - token is saved, user can still try the code if they saw it in console
     }
-
-    // Send email (to be implemented)
-    // await sendResetEmail(email, resetToken);
 
     res.status(200).json({
       success: true,
@@ -303,9 +302,196 @@ async function resetPassword(req, res) {
   }
 }
 
+// Change Password - For logged-in users
+async function changePassword(req, res) {
+  try {
+    const { oldPassword, newPassword } = req.body;
+    const userId = req.user._id;
+
+    if (!oldPassword || !newPassword) {
+      return res.status(400).json({
+        success: false,
+        msg: "Old password and new password are required",
+      });
+    }
+
+    if (newPassword.length < 6) {
+      return res.status(400).json({
+        success: false,
+        msg: "New password must be at least 6 characters long",
+      });
+    }
+
+    // Find user
+    const user = await UserModel.findById(userId);
+    if (!user) {
+      return res.status(404).json({
+        success: false,
+        msg: "User not found",
+      });
+    }
+
+    // Verify old password
+    const isPasswordValid = await bcrypt.compare(oldPassword, user.password);
+    if (!isPasswordValid) {
+      return res.status(401).json({
+        success: false,
+        msg: "Current password is incorrect",
+      });
+    }
+
+    // Hash new password
+    const hashedPassword = await bcrypt.hash(newPassword, 10);
+
+    // Update password
+    user.password = hashedPassword;
+    await user.save();
+
+    res.status(200).json({
+      success: true,
+      msg: "Password changed successfully",
+    });
+  } catch (error) {
+    console.error("Error in changePassword:", error);
+    res.status(500).json({
+      success: false,
+      msg: "An error occurred while changing password",
+    });
+  }
+}
+
+// Delete Account - For logged-in users
+async function deleteAccount(req, res) {
+  try {
+    const userId = req.user._id;
+
+    // Find and delete user
+    const user = await UserModel.findByIdAndDelete(userId);
+
+    if (!user) {
+      return res.status(404).json({
+        success: false,
+        msg: "User not found",
+      });
+    }
+
+    // TODO: Delete all user's messages and conversations
+    // This would require additional cleanup in your message/conversation models
+
+    res.status(200).json({
+      success: true,
+      msg: "Account deleted successfully",
+    });
+  } catch (error) {
+    console.error("Error in deleteAccount:", error);
+    res.status(500).json({
+      success: false,
+      msg: "An error occurred while deleting account",
+    });
+  }
+}
+
+// Update Profile Picture
+async function updateProfilePicture(req, res) {
+  try {
+    const userId = req.user._id;
+
+    if (!req.file) {
+      return res.status(400).json({
+        success: false,
+        msg: "No image file provided",
+      });
+    }
+
+    // Construct the profile picture URL
+    const profilePicUrl = `/uploads/${req.file.filename}`;
+
+    // Update user's profile picture
+    const user = await UserModel.findByIdAndUpdate(
+      userId,
+      { profilePic: profilePicUrl },
+      { new: true }
+    ).select("-password");
+
+    if (!user) {
+      return res.status(404).json({
+        success: false,
+        msg: "User not found",
+      });
+    }
+
+    res.status(200).json({
+      success: true,
+      msg: "Profile picture updated successfully",
+      profilePic: profilePicUrl,
+      user: user,
+    });
+  } catch (error) {
+    console.error("Error in updateProfilePicture:", error);
+    res.status(500).json({
+      success: false,
+      msg: "An error occurred while updating profile picture",
+    });
+  }
+}
+
+// Update About Section
+async function updateAbout(req, res) {
+  try {
+    const userId = req.user._id;
+    const { about } = req.body;
+
+    if (about === undefined || about === null) {
+      return res.status(400).json({
+        success: false,
+        msg: "About text is required",
+      });
+    }
+
+    // Limit about text to 139 characters (like WhatsApp)
+    if (about.length > 139) {
+      return res.status(400).json({
+        success: false,
+        msg: "About text must be 139 characters or less",
+      });
+    }
+
+    // Update user's about
+    const user = await UserModel.findByIdAndUpdate(
+      userId,
+      { about: about },
+      { new: true }
+    ).select("-password");
+
+    if (!user) {
+      return res.status(404).json({
+        success: false,
+        msg: "User not found",
+      });
+    }
+
+    res.status(200).json({
+      success: true,
+      msg: "About updated successfully",
+      about: user.about,
+      user: user,
+    });
+  } catch (error) {
+    console.error("Error in updateAbout:", error);
+    res.status(500).json({
+      success: false,
+      msg: "An error occurred while updating about",
+    });
+  }
+}
+
 module.exports = {
   signinUser,
   signupUser,
   forgotPassword,
   resetPassword,
+  changePassword,
+  deleteAccount,
+  updateProfilePicture,
+  updateAbout,
 };

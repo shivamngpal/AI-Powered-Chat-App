@@ -3,12 +3,14 @@ import { useSocketContext } from "../context/SocketContext";
 import { useAuthContext } from "../context/AuthContext";
 import Conversation from "./Conversation";
 import SearchBar from "./SearchBar";
+import UserProfile from "./UserProfile";
 
 function Sidebar({ selectedUser, onSelectUser }) {
   const [users, setUsers] = useState([]);
   const [searchResults, setSearchResults] = useState([]);
   const [isSearching, setIsSearching] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [showProfile, setShowProfile] = useState(false);
   const { onlineUsers, socket } = useSocketContext();
   const { authUser } = useAuthContext();
 
@@ -122,23 +124,90 @@ function Sidebar({ selectedUser, onSelectUser }) {
     <div
       style={{
         width: "300px",
-        borderRight: "1px solid #ddd",
-        backgroundColor: "white",
+        borderRight: "1px solid #404040",
+        backgroundColor: "#1A1A1A",
         display: "flex",
         flexDirection: "column",
+        color: "#FAFAFA",
       }}
     >
       <div
         style={{
-          padding: "15px 20px",
-          borderBottom: "1px solid #ddd",
-          backgroundColor: "#007bff",
-          color: "white",
+          padding: "20px",
+          borderBottom: "1px solid #404040",
+          backgroundColor: "#1A1A1A",
+          color: "#FAFAFA",
+          boxShadow: "0 2px 8px rgba(0, 0, 0, 0.3)",
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "space-between",
         }}
       >
-        <h3 style={{ margin: 0, fontSize: "18px", fontWeight: "600" }}>
-          {isSearching ? "Search Results" : "Conversations"}
-        </h3>
+        <div style={{ display: "flex", alignItems: "center", gap: "12px" }}>
+          <img
+            src="/vachchat-logo.png"
+            alt="VachChat"
+            style={{ width: "40px", height: "40px", objectFit: "contain" }}
+          />
+          <h3
+            style={{
+              margin: 0,
+              fontSize: "20px",
+              fontWeight: "700",
+              letterSpacing: "0.5px",
+            }}
+          >
+            {isSearching ? "Search Results" : "VachChat"}
+          </h3>
+        </div>
+        {/* Profile Button */}
+        <button
+          onClick={() => setShowProfile(true)}
+          style={{
+            background: "none",
+            border: "none",
+            cursor: "pointer",
+            padding: "8px",
+            borderRadius: "50%",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            transition: "background-color 0.2s",
+          }}
+          onMouseEnter={(e) => (e.target.style.backgroundColor = "#262626")}
+          onMouseLeave={(e) => (e.target.style.backgroundColor = "transparent")}
+          title="Profile"
+        >
+          {authUser?.profilePic ? (
+            <img
+              src={authUser.profilePic}
+              alt="Profile"
+              style={{
+                width: "35px",
+                height: "35px",
+                borderRadius: "50%",
+                objectFit: "cover",
+              }}
+            />
+          ) : (
+            <div
+              style={{
+                width: "35px",
+                height: "35px",
+                borderRadius: "50%",
+                backgroundColor: "#3B82F6",
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                fontSize: "18px",
+                fontWeight: "600",
+                color: "#FFFFFF",
+              }}
+            >
+              {authUser?.name?.charAt(0).toUpperCase() || "U"}
+            </div>
+          )}
+        </button>
       </div>
       {/* Search Bar */}
       <SearchBar
@@ -148,11 +217,11 @@ function Sidebar({ selectedUser, onSelectUser }) {
       {/* Users list */}
       <div style={{ flex: 1, overflowY: "auto" }}>
         {loading ? (
-          <div style={{ padding: "20px", textAlign: "center", color: "#666" }}>
+          <div style={{ padding: "20px", textAlign: "center", color: "#999" }}>
             <p>Loading...</p>
           </div>
         ) : displayUsers.length === 0 ? (
-          <div style={{ padding: "20px", textAlign: "center", color: "#666" }}>
+          <div style={{ padding: "20px", textAlign: "center", color: "#999" }}>
             <p>{isSearching ? "No users found" : "No conversations yet"}</p>
           </div>
         ) : (
@@ -163,8 +232,7 @@ function Sidebar({ selectedUser, onSelectUser }) {
                 user={{
                   id: user._id,
                   fullName: user.name, // Changed from user.fullName to user.name
-                  profilePic:
-                    user.profilePic || "https://via.placeholder.com/40",
+                  profilePic: user.profilePic || "",
                   unreadCount: user.unreadCount || 0,
                   lastMessage: user.lastMessage || null,
                 }}
@@ -181,8 +249,7 @@ function Sidebar({ selectedUser, onSelectUser }) {
                   handleSelectUser({
                     id: user._id,
                     fullName: user.name, // Changed from user.fullName to user.name
-                    profilePic:
-                      user.profilePic || "https://via.placeholder.com/40",
+                    profilePic: user.profilePic || "",
                   });
 
                   // Clear search after selecting a user
@@ -193,6 +260,9 @@ function Sidebar({ selectedUser, onSelectUser }) {
           </div>
         )}
       </div>
+
+      {/* User Profile Sidebar */}
+      <UserProfile isOpen={showProfile} onClose={() => setShowProfile(false)} />
     </div>
   );
 }

@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
-
+import { Input } from "@/components/ui/input";
+import { Button } from "@/components/ui/button";
 
 function SearchBar({ onSearchResults, onClearSearch }) {
   const [searchQuery, setSearchQuery] = useState("");
@@ -54,72 +55,44 @@ function SearchBar({ onSearchResults, onClearSearch }) {
   return (
     <form
       onSubmit={handleSearch}
-      style={{
-        padding: "10px 15px",
-        borderBottom: "1px solid #ddd",
-        backgroundColor: "white",
-      }}
+      className="p-4 border-b border-border"
+      style={{ backgroundColor: "#262626" }}
     >
-      <div style={{ position: "relative", width: "100%" }}>
-        <input
+      <div className="relative w-full">
+        <Input
           type="text"
           placeholder="Search users..."
           value={searchQuery}
           onChange={(e) => setSearchQuery(e.target.value)}
+          className="pr-20 border-border focus-visible:ring-primary"
           style={{
-            width: "100%",
-            padding: "8px 70px 8px 12px",
-            border: "1px solid #ddd",
-            borderRadius: "20px",
-            outline: "none",
-            fontSize: "13px",
-            boxSizing: "border-box",
-          }}
-          onFocus={(e) => {
-            e.target.style.borderColor = "#007bff";
-          }}
-          onBlur={(e) => {
-            e.target.style.borderColor = "#ddd";
+            backgroundColor: "#2E2E2E",
+            color: "#FAFAFA",
+            caretColor: "#FAFAFA",
           }}
         />
+
         {searchQuery && (
-          <button
+          <Button
             type="button"
+            variant="ghost"
+            size="sm"
             onClick={handleClear}
-            style={{
-              position: "absolute",
-              right: "35px",
-              top: "50%",
-              transform: "translateY(-50%)",
-              background: "none",
-              border: "none",
-              cursor: "pointer",
-              fontSize: "14px",
-              color: "#999",
-              padding: "4px",
-            }}
+            className="absolute right-10 top-1/2 -translate-y-1/2 h-7 w-7 p-0 hover:bg-destructive/10 hover:text-destructive"
           >
             ✕
-          </button>
+          </Button>
         )}
-        <button
+
+        <Button
           type="submit"
+          variant="ghost"
+          size="sm"
           disabled={searching}
-          style={{
-            position: "absolute",
-            right: "8px",
-            top: "50%",
-            transform: "translateY(-50%)",
-            background: "none",
-            border: "none",
-            cursor: searching ? "wait" : "pointer",
-            fontSize: "16px",
-            color: "#007bff",
-            padding: "4px",
-          }}
+          className="absolute right-2 top-1/2 -translate-y-1/2 h-7 w-7 p-0 hover:bg-primary/10"
         >
           {searching ? "⌛" : "🔍"}
-        </button>
+        </Button>
       </div>
     </form>
   );

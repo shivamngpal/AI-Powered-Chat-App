@@ -27,7 +27,12 @@ function Message({ message }) {
       case "sent":
         return (
           <span
-            style={{ marginLeft: "4px", color: "rgba(255, 255, 255, 0.7)" }}
+            style={{
+              marginLeft: "4px",
+              color: "#999999",
+              fontWeight: "bold",
+              fontSize: "11px",
+            }}
           >
             ✓
           </span>
@@ -35,7 +40,12 @@ function Message({ message }) {
       case "delivered":
         return (
           <span
-            style={{ marginLeft: "4px", color: "rgba(255, 255, 255, 0.7)" }}
+            style={{
+              marginLeft: "4px",
+              color: "#3B82F6",
+              fontWeight: "bold",
+              fontSize: "11px",
+            }}
           >
             ✓✓
           </span>
@@ -45,8 +55,9 @@ function Message({ message }) {
           <span
             style={{
               marginLeft: "4px",
-              color: "#06f569ff",
+              color: "#10B981",
               fontWeight: "bold",
+              fontSize: "11px",
             }}
           >
             ✓✓
@@ -60,10 +71,10 @@ function Message({ message }) {
   // Check if this is a slash command response
   const isSlashCommand = message.isSlashCommand || false;
 
-  // Construct full image URL (used in multiple places)
+  // Get file URL (proxy handles localhost routing)
   const fullImageUrl = message.fileUrl?.startsWith("http")
     ? message.fileUrl
-    : `http://localhost:3001${message.fileUrl}`;
+    : message.fileUrl;
 
   // Render image message
   const renderImageMessage = () => {
@@ -106,10 +117,10 @@ function Message({ message }) {
       ? `${(message.fileSize / 1024).toFixed(2)} KB`
       : "";
 
-    // Construct full file URL
+    // Get file URL (proxy handles localhost routing)
     const fileUrl = message.fileUrl?.startsWith("http")
       ? message.fileUrl
-      : `http://localhost:3001${message.fileUrl}`;
+      : message.fileUrl;
 
     return (
       <>
@@ -187,16 +198,16 @@ function Message({ message }) {
             background: isSlashCommand
               ? "linear-gradient(135deg, #667eea 0%, #764ba2 100%)"
               : isMyMessage
-              ? "#007bff"
-              : "#e9ecef",
-            color: isMyMessage || isSlashCommand ? "white" : "black",
+              ? "#404040"
+              : "#262626",
+            color: "#FAFAFA",
             padding: "10px 15px",
             borderRadius: "18px",
             borderBottomRightRadius: isMyMessage ? "4px" : "18px",
             borderBottomLeftRadius: isMyMessage ? "18px" : "4px",
             boxShadow: isSlashCommand
               ? "0 4px 8px rgba(102, 126, 234, 0.3)"
-              : "0 1px 2px rgba(0,0,0,0.1)",
+              : "0 1px 2px rgba(0,0,0,0.2)",
           }}
         >
           {message.messageType === "image"

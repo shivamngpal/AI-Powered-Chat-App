@@ -7,6 +7,7 @@ const {
   sendFileMessage,
 } = require("../controllers/messageController.js");
 const upload = require("../config/multerConfig");
+const { messageLimiter } = require("../middleware/rateLimiter");
 
 const router = express.Router();
 
@@ -14,7 +15,7 @@ const router = express.Router();
 router.get("/:id", protectRoute, getMessages);
 
 // Send message to another user
-router.post("/send/:id", protectRoute, sendMessage);
+router.post("/send/:id", protectRoute, messageLimiter, sendMessage);
 
 // Send file/image message
 router.post(

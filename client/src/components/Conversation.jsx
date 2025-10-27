@@ -1,8 +1,8 @@
 import { useAuthContext } from "../context/AuthContext";
-
+import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
+import { Badge } from "@/components/ui/badge";
 
 // AI Bot ID - must match backend
-// Must be a valid 24-character hexadecimal string for MongoDB ObjectId
 const AI_BOT_ID = "671a00000000000000000001";
 
 function Conversation({ user, isOnline, isSelected, onClick }) {
@@ -44,8 +44,18 @@ function Conversation({ user, isOnline, isSelected, onClick }) {
 
     const isMyMessage = user.lastMessage.senderId === authUser?.id;
     const prefix = isMyMessage ? "You: " : "";
-    const messageText = truncateMessage(user.lastMessage.message);
 
+    // Handle different message types
+    if (user.lastMessage.messageType === "image") {
+      return prefix + "📷 Photo";
+    }
+
+    if (user.lastMessage.messageType === "file") {
+      return prefix + "📎 " + (user.lastMessage.fileName || "File");
+    }
+
+    // Regular text message
+    const messageText = truncateMessage(user.lastMessage.message);
     return prefix + messageText;
   };
 
@@ -59,156 +69,82 @@ function Conversation({ user, isOnline, isSelected, onClick }) {
       .slice(0, 2);
   };
 
+  // Get profile picture URL (proxy handles localhost routing)
+  const getProfilePicUrl = () => {
+    if (!user.profilePic) return ""; // Return empty string for default avatar
+    if (user.profilePic.startsWith("http")) return user.profilePic;
+    return user.profilePic; // Use relative path, Vite proxy will handle it
+  };
+
   return (
     <div
       onClick={onClick}
-      style={{
-        padding: "12px 15px",
-        display: "flex",
-        alignItems: "center",
-        gap: "12px",
-        cursor: "pointer",
-        backgroundColor: isSelected ? "#e3f2fd" : "transparent",
-        borderBottom: "1px solid #eee",
-        transition: "background-color 0.2s ease",
-      }}
-      onMouseEnter={(e) => {
-        if (!isSelected) {
-          e.currentTarget.style.backgroundColor = "#f5f5f5";
-        }
-      }}
-      onMouseLeave={(e) => {
-        if (!isSelected) {
-          e.currentTarget.style.backgroundColor = "transparent";
-        }
-      }}
+      className={`
+        flex items-center gap-3 p-3 cursor-pointer transition-colors border-b border-border
+        ${isSelected ? "bg-primary/10" : "hover:bg-secondary/30"}
+      `}
     >
       {/* Avatar with online status indicator */}
-      <div style={{ position: "relative" }}>
-        <img
-          src={user.profilePic || "https://via.placeholder.com/40"}
-          alt={user.fullName}
-          style={{
-            width: "40px",
-            height: "40px",
-            borderRadius: "50%",
-            objectFit: "cover",
-          }}
-        />
+      <div className="relative">
+        <Avatar className="h-10 w-10">
+          <AvatarImage src={getProfilePicUrl()} alt={user.fullName} />
+          <AvatarFallback className="bg-primary/20 text-primary font-semibold">
+            {getInitials(user.fullName)}
+          </AvatarFallback>
+        </Avatar>
+
         {/* Online status dot */}
         {isOnline && (
-          <div
-            style={{
-              position: "absolute",
-              bottom: "2px",
-              right: "2px",
-              width: "10px",
-              height: "10px",
-              backgroundColor: "#4caf50",
-              border: "2px solid white",
-              borderRadius: "50%",
-            }}
-          />
+          <div className="absolute bottom-0 right-0 w-3 h-3 bg-green-500 border-2 border-card rounded-full" />
         )}
       </div>
 
       {/* User name and last message */}
-      <div style={{ flex: 1, minWidth: 0 }}>
-        <div
-          style={{
-            display: "flex",
-            justifyContent: "space-between",
-            alignItems: "center",
-            marginBottom: "2px",
-          }}
-        >
-          <p
-            style={{
-              margin: 0,
-              fontSize: "15px",
-              fontWeight: isSelected ? "600" : "500",
-              color: isSelected ? "#007bff" : "#333",
-              display: "flex",
-              alignItems: "center",
-              gap: "6px",
-            }}
-          >
-            {user.fullName}
+      <div className="flex-1 min-w-0">
+        <div className="flex justify-between items-center mb-0.5">
+          <div className="flex items-center gap-2">
+            <p
+              className={`text-sm font-medium ${
+                isSelected ? "text-primary" : "text-foreground"
+              }`}
+            >
+              {user.fullName}
+            </p>
             {isAIBot && (
-              <span
-                style={{
-                  fontSize: "14px",
-                  background:
-                    "linear-gradient(135deg, #667eea 0%, #764ba2 100%)",
-                  padding: "2px 6px",
-                  borderRadius: "4px",
-                  color: "white",
-                  fontWeight: "bold",
-                }}
-                title="AI Assistant"
-              >
+              <Badge className="text-xs px-1.5 py-0 h-5 bg-gradient-to-r from-purple-500 to-purple-700 hover:from-purple-600 hover:to-purple-800">
                 🤖 AI
-              </span>
+              </Badge>
             )}
-          </p>
+          </div>
+
           {/* Last message timestamp */}
           {user.lastMessage && (
-            <span
-              style={{
-                fontSize: "11px",
-                color: "#999",
-                whiteSpace: "nowrap",
-                marginLeft: "8px",
-              }}
-            >
+            <span className="text-xs text-muted-foreground whitespace-nowrap ml-2">
               {formatLastMessageTime(user.lastMessage.createdAt)}
             </span>
           )}
         </div>
 
         {/* Last message preview */}
-        <div
-          style={{
-            display: "flex",
-            justifyContent: "space-between",
-            alignItems: "center",
-          }}
-        >
+        <div className="flex justify-between items-center">
           <p
-            style={{
-              margin: 0,
-              fontSize: "13px",
-              color: "#666",
-              overflow: "hidden",
-              textOverflow: "ellipsis",
-              whiteSpace: "nowrap",
-              fontWeight: user.unreadCount > 0 ? "600" : "normal",
-            }}
+            className={`text-xs overflow-hidden text-ellipsis whitespace-nowrap ${
+              user.unreadCount > 0
+                ? "font-semibold text-foreground"
+                : "text-muted-foreground"
+            }`}
           >
             {getLastMessagePreview() || "No messages yet"}
           </p>
 
           {/* Unread count badge */}
           {user.unreadCount > 0 && (
-            <div
-              style={{
-                backgroundColor: "#25D366",
-                color: "white",
-                borderRadius: "10px",
-                minWidth: "18px",
-                height: "18px",
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "center",
-                fontSize: "10px",
-                fontWeight: "bold",
-                padding: "0 4px",
-                marginLeft: "6px",
-                flexShrink: 0,
-              }}
+            <Badge
+              variant="default"
+              className="ml-2 flex-shrink-0 h-5 min-w-[20px] px-1.5 bg-green-500 hover:bg-green-600 text-white text-xs font-bold"
             >
               {user.unreadCount > 99 ? "99+" : user.unreadCount}
-            </div>
+            </Badge>
           )}
         </div>
       </div>

@@ -32,7 +32,7 @@ function Messages({ messages, loading }) {
         flex: 1,
         overflowY: "auto",
         padding: "20px 0",
-        backgroundColor: "#f8f9fa",
+        backgroundColor: "#0f0f0f",
       }}
     >
       {loading ? (
@@ -50,8 +50,8 @@ function Messages({ messages, loading }) {
             style={{
               width: "40px",
               height: "40px",
-              border: "4px solid #f3f3f3",
-              borderTop: "4px solid #007bff",
+              border: "4px solid #333333",
+              borderTop: "4px solid #3B82F6",
               borderRadius: "50%",
               animation: "spin 1s linear infinite",
             }}
@@ -62,7 +62,7 @@ function Messages({ messages, loading }) {
               100% { transform: rotate(360deg); }
             }
           `}</style>
-          <div style={{ color: "#666" }}>Loading messages...</div>
+          <div style={{ color: "#999" }}>Loading messages...</div>
         </div>
       ) : messages.length === 0 ? (
         <div
@@ -71,7 +71,7 @@ function Messages({ messages, loading }) {
             justifyContent: "center",
             alignItems: "center",
             height: "100%",
-            color: "#666",
+            color: "#999",
             flexDirection: "column",
             gap: "10px",
           }}

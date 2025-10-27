@@ -10,14 +10,13 @@ import ConnectionStatus from "./components/ConnectionStatus";
 function App() {
   const { authUser } = useAuthContext();
 
-  // Enable dark mode by adding 'dark' class to html element
+  // Enable dark mode globally
   useEffect(() => {
     document.documentElement.classList.add("dark");
   }, []);
 
   return (
     <div className="bg-background text-foreground min-h-screen">
-      {/* Show connection status when logged in */}
       {authUser && <ConnectionStatus />}
 
       <Routes>

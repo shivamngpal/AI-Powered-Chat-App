@@ -141,11 +141,11 @@ function EmojiPicker({ onEmojiSelect }) {
               position: "absolute",
               bottom: "45px",
               left: "0",
-              backgroundColor: "white",
-              border: "1px solid #ddd",
+              backgroundColor: "#262626",
+              border: "1px solid #404040",
               borderRadius: "10px",
               padding: "10px",
-              boxShadow: "0 4px 12px rgba(0,0,0,0.15)",
+              boxShadow: "0 4px 12px rgba(0,0,0,0.5)",
               zIndex: 1000,
               width: "300px",
               maxHeight: "250px",
@@ -174,9 +174,10 @@ function EmojiPicker({ onEmojiSelect }) {
                     fontSize: "24px",
                     padding: "5px",
                     borderRadius: "5px",
+                    transition: "background-color 0.2s",
                   }}
                   onMouseEnter={(e) => {
-                    e.target.style.backgroundColor = "#f0f0f0";
+                    e.target.style.backgroundColor = "#404040";
                   }}
                   onMouseLeave={(e) => {
                     e.target.style.backgroundColor = "transparent";
