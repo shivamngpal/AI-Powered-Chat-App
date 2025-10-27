@@ -4,6 +4,8 @@ import { useAuthContext } from "../context/AuthContext";
 import Conversation from "./Conversation";
 import SearchBar from "./SearchBar";
 import UserProfile from "./UserProfile";
+const API_URL = import.meta.env.VITE_API_URL || "";
+
 
 function Sidebar({ selectedUser, onSelectUser }) {
   const [users, setUsers] = useState([]);
@@ -18,7 +20,7 @@ function Sidebar({ selectedUser, onSelectUser }) {
     const fetchUsers = async () => {
       setLoading(true);
       try {
-        const res = await fetch("/api/users", { credentials: "include" });
+        const res = await fetch(`${API_URL}/api/users`, { credentials: "include" });
         const data = await res.json();
         if (data.error) {
           throw new Error(data.error);

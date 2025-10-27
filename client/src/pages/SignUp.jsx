@@ -10,6 +10,8 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
+const API_URL = import.meta.env.VITE_API_URL || "";
+
 
 function Signup() {
   const [email, setEmail] = useState("");
@@ -70,9 +72,10 @@ function Signup() {
     setLoading(true);
 
     try {
-      const res = await fetch("/api/auth/signup", {
+      const res = await fetch(`${API_URL}/api/auth/signup`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
+        credentials: "include",
         body: JSON.stringify({ email, password, name }),
       });
 
