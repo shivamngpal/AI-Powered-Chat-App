@@ -70,7 +70,7 @@ app.use(
 );
 
 // Handle preflight requests explicitly
-app.options("*", cors());
+app.options("/*", cors());
 
 // middlewares
 app.use(express.json());
