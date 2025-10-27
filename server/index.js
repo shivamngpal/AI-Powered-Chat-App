@@ -23,7 +23,7 @@ dotenv.config();
 validateEnv();
 
 // we can use env variables using process.env.VARIABLE_NAME
-const port = process.env.PORT;
+const port = process.env.PORT || 3001;
 const MONGO_URI = process.env.MONGO_URI;
 
 // Create HTTP server from Express app
