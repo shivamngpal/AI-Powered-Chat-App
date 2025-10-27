@@ -72,7 +72,8 @@ app.use(
 app.use(express.json());
 
 // Handle preflight requests explicitly
-app.options("*", cors({ origin: true, credentials: true }));
+app.options(/.*/, cors());
+// app.options("*", cors({ origin: true, credentials: true }));
 
 // middlewares
 app.use(cookieParser());
