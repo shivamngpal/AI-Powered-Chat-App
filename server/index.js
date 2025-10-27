@@ -69,11 +69,12 @@ app.use(
   })
 );
 
+app.use(express.json());
+
 // Handle preflight requests explicitly
-app.options("/*", cors());
+app.options("*", cors({ origin: true, credentials: true }));
 
 // middlewares
-app.use(express.json());
 app.use(cookieParser());
 
 // Security sanitization middleware (protects against NoSQL injection & basic XSS)
