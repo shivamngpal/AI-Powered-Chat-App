@@ -8,15 +8,19 @@ const userSocketMap = {};
 let io;
 
 const initSocket = (server) => {
-  const allowedOrigins = process.env.CLIENT_URL
-    ? [process.env.CLIENT_URL]
-    : ["http://localhost:3000", "http://localhost:3001"];
+  const allowedOrigins = [
+    "https://vachchat.vercel.app",
+    "http://localhost:3000",
+    "http://localhost:3001",
+  ];
 
   io = new Server(server, {
     cors: {
       origin: allowedOrigins,
       credentials: true,
+      methods: ["GET", "POST"],
     },
+    transports: ["websocket", "polling"],
   });
 
   // handle connections
