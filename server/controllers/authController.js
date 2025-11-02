@@ -145,6 +145,7 @@ async function signinUser(req, res) {
     res.json({
       success: true,
       message: "Logged in successfully",
+      token: token, // Send token in response for localStorage
       user: {
         id: user._id,
         email: user.email,

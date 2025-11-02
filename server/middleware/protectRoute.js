@@ -9,7 +9,16 @@ const JWT_SECRET = process.env.JWT_SECRET;
 
 async function protectRoute(req, res, next) {
   try {
-    const token = req.cookies.jwt;
+    // Try to get token from cookie first, then from Authorization header
+    let token = req.cookies.jwt;
+
+    // If no cookie, check Authorization header
+    if (!token) {
+      const authHeader = req.headers.authorization;
+      if (authHeader && authHeader.startsWith("Bearer ")) {
+        token = authHeader.substring(7); // Remove 'Bearer ' prefix
+      }
+    }
 
     // if token does not exists
     if (!token) {

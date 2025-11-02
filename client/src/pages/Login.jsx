@@ -48,6 +48,11 @@ function Login() {
 
       console.log("Login successful, user data:", data.user);
 
+      // Store JWT token in localStorage
+      if (data.token) {
+        localStorage.setItem("jwt-token", data.token);
+      }
+
       // Store user data with relative profilePic path (proxy handles routing)
       const userData = {
         ...data.user,

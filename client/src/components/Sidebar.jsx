@@ -20,7 +20,18 @@ function Sidebar({ selectedUser, onSelectUser }) {
     const fetchUsers = async () => {
       setLoading(true);
       try {
-        const res = await fetch(`${API_URL}/api/users`, { credentials: "include" });
+                const token = localStorage.getItem("jwt-token");
+                const headers = {
+                  "Content-Type": "application/json",
+                };
+                if (token) {
+                  headers["Authorization"] = `Bearer ${token}`;
+                }
+
+                const res = await fetch(`${API_URL}/api/users`, {
+                  credentials: "include",
+                  headers: headers,
+                });
         const data = await res.json();
         if (data.error) {
           throw new Error(data.error);
