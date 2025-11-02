@@ -138,8 +138,8 @@ async function signinUser(req, res) {
     res.cookie("jwt", token, {
       httpOnly: true, // Prevents client-side JavaScript from accessing the cookie
       secure: process.env.NODE_ENV === "production", // Use secure cookies in production
-      sameSite: "strict", // CSRF protection
-      maxAge: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000), // 7 days from today
+      sameSite: process.env.NODE_ENV === "production" ? "none" : "strict", // Allow cross-origin in production
+      maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days in milliseconds
     });
 
     res.json({
