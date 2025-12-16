@@ -129,7 +129,7 @@ async function signinUser(req, res) {
     const token = jwt.sign(
       {
         // as _id is object so converting it to string and then creating a jwt
-        id: user._id.toString(),
+        userId: user._id.toString(),
       },
       JWT_SECRET
     );

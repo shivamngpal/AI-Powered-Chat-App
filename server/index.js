@@ -56,6 +56,7 @@ app.use(
 app.use(
   cors({
     origin: [
+      process.env.CLIENT_URL,
       "https://vachchat.vercel.app",
       "http://localhost:3000",
       "http://localhost:3001",
