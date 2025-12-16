@@ -59,6 +59,7 @@ function Login() {
         profilePic: data.user.profilePic || "",
       };
 
+      localStorage.setItem("chat-user", JSON.stringify(userData));
       setAuthUser(userData);
     } catch (error) {
       console.error("Login failed:", error.message);
