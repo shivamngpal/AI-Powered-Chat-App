@@ -61,6 +61,7 @@ function Login() {
 
       localStorage.setItem("chat-user", JSON.stringify(userData));
       setAuthUser(userData);
+      navigate("/");
     } catch (error) {
       console.error("Login failed:", error.message);
       setError(error.message || "Login failed. Please try again.");

@@ -16,6 +16,9 @@ const errorHandler = require("./middleware/errorHandler");
 const validateEnv = require("./config/validateEnv");
 const securityMiddleware = require("./middleware/noSqlInjection");
 
+
+app.set("trust proxy", 1);
+
 // Load environment variables from .env file
 dotenv.config();
 
