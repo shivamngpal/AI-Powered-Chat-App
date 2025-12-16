@@ -1,9 +1,11 @@
 import { useState, useEffect } from "react";
 import { useSocketContext } from "../context/SocketContext";
 import { useAuthContext } from "../context/AuthContext";
+import { fetchWithAuth } from "../utils/api";
 import Conversation from "./Conversation";
 import SearchBar from "./SearchBar";
 import UserProfile from "./UserProfile";
+
 const API_URL = import.meta.env.VITE_API_URL || "";
 
 
@@ -20,18 +22,7 @@ function Sidebar({ selectedUser, onSelectUser }) {
     const fetchUsers = async () => {
       setLoading(true);
       try {
-                const token = localStorage.getItem("jwt-token");
-                const headers = {
-                  "Content-Type": "application/json",
-                };
-                if (token) {
-                  headers["Authorization"] = `Bearer ${token}`;
-                }
-
-                const res = await fetch(`${API_URL}/api/users`, {
-                  credentials: "include",
-                  headers: headers,
-                });
+        const res = await fetchWithAuth(`/api/users`);
         const data = await res.json();
         if (data.error) {
           throw new Error(data.error);

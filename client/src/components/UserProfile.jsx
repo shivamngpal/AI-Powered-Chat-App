@@ -2,6 +2,8 @@ import { useState, useRef } from "react";
 import { useAuthContext } from "../context/AuthContext";
 import { useNavigate } from "react-router-dom";
 
+const api_url = import.meta.env.VITE_API_URL || "";
+
 function UserProfile({ isOpen, onClose }) {
   const { authUser, setAuthUser } = useAuthContext();
   const navigate = useNavigate();
@@ -60,7 +62,7 @@ function UserProfile({ isOpen, onClose }) {
     setLoading(true);
 
     try {
-      const res = await fetch("/api/auth/change-password", {
+      const res = await fetch(`${api_url}/api/auth/change-password`, {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
         credentials: "include",
@@ -118,7 +120,7 @@ function UserProfile({ isOpen, onClose }) {
       const formData = new FormData();
       formData.append("profilePicture", file);
 
-      const res = await fetch("/api/auth/update-profile-picture", {
+      const res = await fetch(`${api_url}/api/auth/update-profile-picture`, {
         method: "PUT",
         credentials: "include",
         body: formData,
@@ -161,7 +163,7 @@ function UserProfile({ isOpen, onClose }) {
     setSuccess("");
 
     try {
-      const res = await fetch("/api/auth/update-about", {
+      const res = await fetch(`${api_url}/api/auth/update-about`, {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
         credentials: "include",
@@ -203,7 +205,7 @@ function UserProfile({ isOpen, onClose }) {
     setError("");
 
     try {
-      const res = await fetch("/api/auth/delete-account", {
+      const res = await fetch(`${api_url}/api/auth/delete-account`, {
         method: "DELETE",
         credentials: "include",
       });

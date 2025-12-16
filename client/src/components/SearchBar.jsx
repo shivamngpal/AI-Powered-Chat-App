@@ -2,6 +2,8 @@ import { useState, useEffect } from "react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 
+const api_url = import.meta.env.VITE_API_URL;
+
 function SearchBar({ onSearchResults, onClearSearch }) {
   const [searchQuery, setSearchQuery] = useState("");
   const [searching, setSearching] = useState(false);
@@ -24,7 +26,7 @@ function SearchBar({ onSearchResults, onClearSearch }) {
     setSearching(true);
     try {
       const res = await fetch(
-        `/api/users/search?q=${encodeURIComponent(query)}`
+        `${api_url}/api/users/search?q=${encodeURIComponent(query)}`
       );
       const data = await res.json();
 

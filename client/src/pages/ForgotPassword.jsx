@@ -10,6 +10,8 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 
+const api_url = import.meta.env.VITE_API_URL;
+
 function ForgotPassword() {
   const [email, setEmail] = useState("");
   const [token, setToken] = useState("");
@@ -28,7 +30,7 @@ function ForgotPassword() {
     setLoading(true);
 
     try {
-      const response = await fetch("/api/auth/forgot-password", {
+      const response = await fetch(`${api_url}/api/auth/forgot-password`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ email }),
@@ -64,7 +66,7 @@ function ForgotPassword() {
     setLoading(true);
 
     try {
-      const response = await fetch("/api/auth/reset-password", {
+      const response = await fetch(`${api_url}/api/auth/reset-password`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ email, token, newPassword }),

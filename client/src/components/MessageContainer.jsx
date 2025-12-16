@@ -2,8 +2,11 @@ import { useState, useEffect } from "react";
 import { useSocketContext } from "../context/SocketContext";
 import { useAuthContext } from "../context/AuthContext";
 import Messages from "./Messages";
+import { fetchWithAuth } from "../utils/api";
 import MessageInput from "./MessageInput";
 import TypingIndicator from "./TypingIndicator";
+
+const api_url = import.meta.env.VITE_API_URL;
 
 function MessageContainer({ selectedUser, onBack }) {
   const [messages, setMessages] = useState([]);
@@ -27,7 +30,7 @@ function MessageContainer({ selectedUser, onBack }) {
       setLoading(true);
       setError(null);
       try {
-        const res = await fetch(`/api/messages/${selectedUser.id}`);
+        const res = await fetchWithAuth(`/api/messages/${selectedUser.id}`);
         if (!res.ok) {
           throw new Error("Failed to fetch messages");
         }
@@ -52,7 +55,7 @@ function MessageContainer({ selectedUser, onBack }) {
     if (!selectedUser) return;
 
     try {
-      await fetch(`/api/messages/read/${selectedUser.id}`, {
+      await fetch(`${api_url}/api/messages/read/${selectedUser.id}`, {
         method: "PUT",
       });
     } catch (error) {
@@ -220,7 +223,7 @@ function MessageContainer({ selectedUser, onBack }) {
     if (!selectedUser) return;
 
     try {
-      const res = await fetch(`/api/messages/send/${selectedUser.id}`, {
+      const res = await fetch(`${api_url}/api/messages/send/${selectedUser.id}`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ message: messageText }),
@@ -270,7 +273,7 @@ function MessageContainer({ selectedUser, onBack }) {
         formData.append("caption", caption);
       }
 
-      const res = await fetch(`/api/messages/send-file/${selectedUser.id}`, {
+      const res = await fetch(`${api_url}/api/messages/send-file/${selectedUser.id}`, {
         method: "POST",
         body: formData,
       });
