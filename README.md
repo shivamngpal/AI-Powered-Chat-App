@@ -132,11 +132,11 @@ chat-app/
 
 ---
 
-**Basic Chat**: Register two users, login, and exchange messages in real-time.
-**AI Commands**: Type `/ai What is React?` in any chat to test AI integration.
-**File Sharing**: Upload images using the attachment button. 
-**Password Reset**: Test forgot password flow with email verification. 
-**Status**: Check online/offline indicators and typing status.
+1. **Basic Chat**: Register two users, login, and exchange messages in real-time.
+2. **AI Commands**: Type `/ai What is React?` in any chat to test AI integration.
+3. **File Sharing**: Upload images using the attachment button.
+4. **Password Reset**: Test forgot password flow with email verification.
+5. **Status**: Check online/offline indicators and typing status.
 
 - [ ] File sharing
 - [ ] Message reactions
