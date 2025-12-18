@@ -8,12 +8,21 @@ if (import.meta.env.DEV) {
 export const fetchWithAuth = async (url, options = {}) => {
   const token = localStorage.getItem("jwt-token");
 
+  // Debug logging
+  console.log("fetchWithAuth called for:", url);
+  console.log(
+    "Token from localStorage:",
+    token ? `${token.substring(0, 20)}...` : "null"
+  );
+
   const defaultHeaders = {
     "Content-Type": "application/json",
   };
 
   if (token) {
     defaultHeaders["Authorization"] = `Bearer ${token}`;
+  } else {
+    console.warn("⚠️ No token found in localStorage!");
   }
 
   const config = {
@@ -26,6 +35,7 @@ export const fetchWithAuth = async (url, options = {}) => {
   };
 
   const fullUrl = `${API_URL}${url}`;
+  console.log("Full URL:", fullUrl);
 
   try {
     return await fetch(fullUrl, config);

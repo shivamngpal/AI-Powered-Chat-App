@@ -8,7 +8,6 @@ import UserProfile from "./UserProfile";
 
 const API_URL = import.meta.env.VITE_API_URL || "";
 
-
 function Sidebar({ selectedUser, onSelectUser }) {
   const [users, setUsers] = useState([]);
   const [searchResults, setSearchResults] = useState([]);
@@ -19,6 +18,9 @@ function Sidebar({ selectedUser, onSelectUser }) {
   const { authUser } = useAuthContext();
 
   useEffect(() => {
+    // Only fetch when a user is authenticated so we have a token to send
+    if (!authUser) return;
+
     const fetchUsers = async () => {
       setLoading(true);
       try {
@@ -34,8 +36,9 @@ function Sidebar({ selectedUser, onSelectUser }) {
         setLoading(false);
       }
     };
+
     fetchUsers();
-  }, []);
+  }, [authUser]);
 
   // Listen for real-time unread count updates
   useEffect(() => {

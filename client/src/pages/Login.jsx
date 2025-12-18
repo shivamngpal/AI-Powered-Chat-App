@@ -42,15 +42,27 @@ function Login() {
       });
 
       const data = await res.json();
+
+      // Debug: Log full response
+      console.log("Full login response:", data);
+      console.log("Token received:", data.token);
+
       if (!data.success) {
-        throw new Error(data.msg);
+        throw new Error(data.msg || data.message);
       }
 
       console.log("Login successful, user data:", data.user);
 
       // Store JWT token in localStorage
       if (data.token) {
+        console.log("Saving token to localStorage:", data.token);
         localStorage.setItem("jwt-token", data.token);
+        console.log(
+          "Token saved. Verification:",
+          localStorage.getItem("jwt-token")
+        );
+      } else {
+        console.error("No token in response!");
       }
 
       // Store user data with relative profilePic path (proxy handles routing)
